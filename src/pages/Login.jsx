@@ -49,7 +49,15 @@ function Login() {
             return
           }
 
+          if (data) {
+            localStorage.setItem('accessToken', data.accessToken || '')
+            localStorage.setItem('refreshToken', data.refreshToken || '')
+            localStorage.setItem('userId', data.userId || '')
+            localStorage.setItem('isNewUser', String(Boolean(data.isNewUser)))
+          }
+
           console.log('로그인 성공', data)
+          window.location.assign('/')
         } catch (error) {
           console.error(error)
           setErrorMessage('서버와 통신할 수 없어요.')
