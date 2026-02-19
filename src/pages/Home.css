@@ -60,6 +60,13 @@
   padding: 0 20px 20px;
 }
 
+.home-load-error {
+  margin: 12px auto 0;
+  color: #ffb4b4;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 .banner-slider {
   position: relative;
   width: 100%;
