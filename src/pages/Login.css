@@ -64,6 +64,11 @@
   border-color: #fff;
 }
 
+.google-login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .google-login-btn:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;
@@ -72,4 +77,11 @@
 .login-safe-area {
   height: env(safe-area-inset-bottom, 0px);
   min-height: 20px;
+}
+
+.login-error {
+  margin-top: 12px;
+  color: #ffb4b4;
+  font-size: 0.9rem;
+  text-align: center;
 }

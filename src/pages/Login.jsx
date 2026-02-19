@@ -1,9 +1,70 @@
+import { useState } from 'react'
 import './Login.css'
 
 function Login() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+
   const handleGoogleLogin = () => {
-    // TODO: Google OAuth 연동
-    console.log('구글 로그인 클릭')
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
+    setErrorMessage('')
+
+    if (!clientId) {
+      setErrorMessage('VITE_GOOGLE_CLIENT_ID가 설정되지 않았어요.')
+      return
+    }
+
+    if (!window.google?.accounts?.id) {
+      setErrorMessage('구글 로그인 스크립트를 불러오지 못했어요.')
+      return
+    }
+
+    setIsLoading(true)
+
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: async (response) => {
+        const idToken = response?.credential
+
+        if (!idToken) {
+          setIsLoading(false)
+          setErrorMessage('ID 토큰을 받지 못했어요.')
+          return
+        }
+
+        try {
+          const result = await fetch('http://localhost:5000/api/auth/google', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ idToken })
+          })
+
+          const data = await result.json().catch(() => null)
+
+          if (!result.ok) {
+            setErrorMessage(data?.message || '로그인에 실패했어요.')
+            return
+          }
+
+          console.log('로그인 성공', data)
+        } catch (error) {
+          console.error(error)
+          setErrorMessage('서버와 통신할 수 없어요.')
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    })
+
+    window.google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        setIsLoading(false)
+        setErrorMessage('구글 로그인 팝업을 열 수 없어요.')
+      }
+    })
   }
 
   return (
@@ -20,10 +81,17 @@ function Login() {
           className="google-login-btn"
           onClick={handleGoogleLogin}
           aria-label="구글 계정으로 로그인"
+          aria-busy={isLoading}
+          disabled={isLoading}
         >
           <GoogleIcon />
-          <span>구글 계정으로 로그인</span>
+          <span>{isLoading ? '로그인 중...' : '구글 계정으로 로그인'}</span>
         </button>
+        {errorMessage ? (
+          <p className="login-error" role="alert">
+            {errorMessage}
+          </p>
+        ) : null}
       </div>
       <div className="login-safe-area" aria-hidden="true" />
     </div>
