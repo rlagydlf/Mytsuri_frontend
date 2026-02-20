@@ -111,7 +111,6 @@ function MapPage() {
           const day = String(d.getDate()).padStart(2, '0')
           const startDateStr = `${year}-${month}-${day}`
           params.append('startDate', startDateStr)
-          console.log('시작 날짜:', startDateStr)
         }
         
         if (selectedDateRange?.endDate) {
@@ -121,42 +120,30 @@ function MapPage() {
           const day = String(d.getDate()).padStart(2, '0')
           const endDateStr = `${year}-${month}-${day}`
           params.append('endDate', endDateStr)
-          console.log('종료 날짜:', endDateStr)
         }
         
         // type을 정확하게 전송 (예: "여름축제" - 공백 제거)
         if (selectedType) {
           const typeStr = (selectedType.name || selectedType).replace(/\s/g, '')
           params.append('type', typeStr)
-          console.log('타입 필터:', { selectedType, typeStr })
         }
         
         const queryString = params.toString()
         const url = `http://localhost:5000/api/map/markers${queryString ? '?' + queryString : ''}`
         
-        console.log('마커 요청 URL:', url)
-        console.log('선택된 필터:', { selectedPrefecture, selectedDateRange, selectedType })
-        
         const markersRes = await fetch(url, { signal: controller.signal })
         
-        console.log('마커 응답 상태:', markersRes.status)
-        
         if (!markersRes.ok) {
-          const errorData = await markersRes.json().catch(() => null)
-          console.error('마커 요청 실패:', errorData)
           throw new Error('마커 데이터를 불러오지 못했어요.')
         }
 
         const markersData = await markersRes.json()
-        console.log('마커 데이터:', markersData)
-        console.log('마커 데이터 타입:', typeof markersData, '길이:', Array.isArray(markersData) ? markersData.length : 'not array')
         
         if (isMounted) {
           setFestivalMarkers(Array.isArray(markersData) ? markersData : [])
         }
       } catch (error) {
         if (error.name === 'AbortError') return
-        console.error('마커 조회 에러:', error)
         if (isMounted) {
           setLoadError('마커 데이터를 불러오지 못했어요.')
         }

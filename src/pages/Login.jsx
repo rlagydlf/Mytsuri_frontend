@@ -52,10 +52,8 @@ function Login() {
             return
           }
 
-          console.log('로그인 성공', data)
           navigate('/', { replace: true })
         } catch (error) {
-          console.error(error)
           setErrorMessage('서버와 통신할 수 없어요.')
         } finally {
           setIsLoading(false)
