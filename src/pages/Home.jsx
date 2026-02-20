@@ -4,61 +4,98 @@ import NavigationBar from '../components/NavigationBar'
 import StatusBar from '../components/StatusBar'
 import './Home.css'
 
-const BANNER_SLIDES = [
-  { id: 1, image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800', title: '아오모리 네부타 제', subtitle: '동북 지방 대표 여름 축제' },
-  { id: 2, image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800', title: '교토 기온 마츠리', subtitle: '일본 3대 축제 중 하나' },
-  { id: 3, image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800', title: '나고야 축제', subtitle: '도시의 문화를 느껴보세요' },
-  { id: 4, image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800', title: '후쿠오카 하카타 기온', subtitle: '매년 7월 열리는 전통 축제' },
-  { id: 5, image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800', title: '센다이 다나바타', subtitle: '동북 3대 축제 중 하나' },
+const EMPTY_BANNERS = []
+const EMPTY_CATEGORIES = []
+const EMPTY_CITIES = []
+const EMPTY_FESTIVALS = []
+
+const CATEGORY_ORDER = [
+  '여름 축제',
+  '겨울 축제',
+  '봄 축제',
+  '가을 축제',
+  '먹거리 축제',
+  '특산물 축제'
 ]
 
-const CATEGORIES = [
-  { id: 'summer', label: '여름 축제', icon: '⛱️' },
-  { id: 'winter', label: '겨울 축제', icon: '☃️' },
-  { id: 'spring', label: '봄 축제', icon: '🌸' },
-  { id: 'autumn', label: '가을 축제', icon: '🍂' },
-  { id: 'food', label: '먹거리 축제', icon: '🍜' },
-  { id: 'local', label: '특산물 축제', icon: '🍎' },
-]
-
-const CITIES = [
-  { id: 'kyoto', label: '교토', image: '/assets/city/Kyoto.svg' },
-  { id: 'osaka', label: '오사카', image: '/assets/city/Osaka.svg' },
-  { id: 'nagoya', label: '나고야', image: '/assets/city/Nagoya.svg' },
-  { id: 'tokyo', label: '도쿄', image: '/assets/city/Tokyo.svg' },
-  { id: 'fukuoka', label: '후쿠오카', image: '/assets/city/Fukuoka.svg' },
-]
-
-const FESTIVAL_CARD = {
-  image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400',
-  title: '타카야마 여름 축제',
-  location: '기후현 타카야마시',
-  date: '2026년 7월',
-  rating: 4.8,
-  reviewCount: 231,
-  bookmarkCount: 124,
+const getCategoryOrder = (label) => {
+  const index = CATEGORY_ORDER.indexOf(label)
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index
 }
-
-const FESTIVAL_CARDS = [
-  { ...FESTIVAL_CARD, id: 1 },
-  { ...FESTIVAL_CARD, id: 2, title: '고잔 오쿠리비', rating: 4.7 },
-  { ...FESTIVAL_CARD, id: 3, title: '후쿠오카 하카타 기온 야마카사', location: '후쿠오카현 구시다 신사', date: '매년 7월 1일~7월 15일', rating: 4.5, reviewCount: 345, bookmarkCount: 450 },
-  { ...FESTIVAL_CARD, id: 4, title: '나고야 봄 축제', location: '나고야현 나고야성', date: '2026년 3월 20일 ~ 4월 6일', rating: 4.2, reviewCount: 126, bookmarkCount: 453 },
-]
 
 const SWIPE_THRESHOLD = 50
 
 function Home() {
   const navigate = useNavigate()
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [banners, setBanners] = useState(EMPTY_BANNERS)
+  const [categories, setCategories] = useState(EMPTY_CATEGORIES)
+  const [cities, setCities] = useState(EMPTY_CITIES)
+  const [festivals, setFestivals] = useState(EMPTY_FESTIVALS)
+  const [loadError, setLoadError] = useState('')
   const touchStartX = useRef(0)
 
   useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+
+    const fetchData = async () => {
+      try {
+        setLoadError('')
+        const [bannersRes, categoriesRes, citiesRes, festivalsRes] = await Promise.all([
+          fetch('http://localhost:5000/api/home/banners', { signal: controller.signal }),
+          fetch('http://localhost:5000/api/home/categories', { signal: controller.signal }),
+          fetch('http://localhost:5000/api/home/cities', { signal: controller.signal }),
+          fetch('http://localhost:5000/api/home/festivals', { signal: controller.signal })
+        ])
+
+        if (!bannersRes.ok || !categoriesRes.ok || !citiesRes.ok || !festivalsRes.ok) {
+          throw new Error('홈 데이터를 불러오지 못했어요.')
+        }
+
+        const [bannersData, categoriesData, citiesData, festivalsData] = await Promise.all([
+          bannersRes.json(),
+          categoriesRes.json(),
+          citiesRes.json(),
+          festivalsRes.json()
+        ])
+
+        if (isMounted) {
+          setBanners(Array.isArray(bannersData) ? bannersData : EMPTY_BANNERS)
+          const sortedCategories = Array.isArray(categoriesData)
+            ? [...categoriesData].sort((a, b) => getCategoryOrder(a.label) - getCategoryOrder(b.label))
+            : EMPTY_CATEGORIES
+          setCategories(sortedCategories)
+          setCities(Array.isArray(citiesData) ? citiesData : EMPTY_CITIES)
+          setFestivals(Array.isArray(festivalsData) ? festivalsData : EMPTY_FESTIVALS)
+        }
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          return
+        }
+        if (isMounted) {
+          setLoadError('홈 데이터를 불러오지 못했어요.')
+        }
+      }
+    }
+
+    fetchData()
+
+    return () => {
+      isMounted = false
+      controller.abort()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!banners.length) {
+      return undefined
+    }
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % BANNER_SLIDES.length)
+      setCurrentSlide((prev) => (prev + 1) % banners.length)
     }, 4000)
     return () => clearInterval(timer)
-  }, [])
+  }, [banners.length])
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX
@@ -67,7 +104,7 @@ function Home() {
   const handleTouchEnd = (e) => {
     const endX = e.changedTouches[0].clientX
     const deltaX = touchStartX.current - endX
-    const total = BANNER_SLIDES.length
+    const total = banners.length
     if (Math.abs(deltaX) < SWIPE_THRESHOLD) return
     if (deltaX > 0) {
       setCurrentSlide((prev) => (prev + 1) % total)
@@ -98,7 +135,7 @@ function Home() {
           onTouchEnd={handleTouchEnd}
         >
           <div className="banner-track" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
-            {BANNER_SLIDES.map((slide) => (
+            {banners.map((slide) => (
               <div key={slide.id} className="banner-slide">
                 <img src={slide.image} alt={slide.title} />
                 <div className="banner-overlay">
@@ -109,7 +146,7 @@ function Home() {
             ))}
           </div>
           <div className="banner-dots">
-            {BANNER_SLIDES.map((_, i) => (
+            {banners.map((_, i) => (
               <button key={i} type="button" className={`banner-dot ${i === currentSlide ? 'active' : ''}`} onClick={() => setCurrentSlide(i)} aria-label={`${i + 1}번 슬라이드`} />
             ))}
           </div>
@@ -117,7 +154,7 @@ function Home() {
 
         <section className="category-section">
           <div className="category-scroll">
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat.id}
                 type="button"
@@ -140,7 +177,7 @@ function Home() {
             <button type="button" className="section-more" aria-label="더보기"><ArrowIcon /></button>
           </div>
           <div className="festival-scroll">
-            {FESTIVAL_CARDS.map((card) => <FestivalCard key={card.id} data={card} />)}
+            {festivals.map((card) => <FestivalCard key={card.id} data={card} />)}
           </div>
         </section>
 
@@ -153,14 +190,14 @@ function Home() {
             <button type="button" className="section-more" aria-label="더보기"><ArrowIcon /></button>
           </div>
           <div className="festival-scroll">
-            {FESTIVAL_CARDS.map((card) => <FestivalCard key={`r-${card.id}`} data={{ ...card, id: card.id + 10 }} />)}
+            {festivals.map((card) => <FestivalCard key={`r-${card.id}`} data={card} />)}
           </div>
         </section>
 
         <section className="city-section">
           <h3 className="section-title">어디로 갈까요?</h3>
           <div className="city-scroll">
-            {CITIES.map((city) => (
+            {cities.map((city) => (
               <button key={city.id} type="button" className="city-item">
                 <img src={city.image} alt={city.label} className="city-item-image" />
               </button>
@@ -177,9 +214,15 @@ function Home() {
             <button type="button" className="section-more" aria-label="더보기"><ArrowIcon /></button>
           </div>
           <div className="festival-scroll">
-            {FESTIVAL_CARDS.map((card) => <FestivalCard key={`s-${card.id}`} data={{ ...card, id: card.id + 20 }} />)}
+            {festivals.map((card) => <FestivalCard key={`s-${card.id}`} data={card} />)}
           </div>
         </section>
+
+        {loadError ? (
+          <p className="home-load-error" role="alert">
+            {loadError}
+          </p>
+        ) : null}
 
         <div className="home-bottom-pad" />
       </main>

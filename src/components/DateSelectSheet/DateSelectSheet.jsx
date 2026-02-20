@@ -74,16 +74,16 @@ function DateSelectSheet({ isOpen, onClose, onSelect }) {
     const dd = new Date(d)
     dd.setHours(0, 0, 0, 0)
     if (!startDate) {
-      setStartDate(d)
+      setStartDate(dd)  // dd 저장 (시간이 0으로 설정됨)
       setEndDate(null)
     } else {
       const s = new Date(startDate)
       s.setHours(0, 0, 0, 0)
       if (dd < s) {
-        setStartDate(d)
+        setStartDate(dd)  // dd 저장 (시간이 0으로 설정됨)
         setEndDate(null)
       } else {
-        setEndDate(d)
+        setEndDate(dd)  // dd 저장 (시간이 0으로 설정됨)
       }
     }
   }

@@ -200,3 +200,17 @@
 .map-container .mapboxgl-ctrl-logo {
   opacity: 0.85;
 }
+.map-load-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #ffb4b4;
+  text-align: center;
+  padding: 20px;
+}
+
+.map-load-error p {
+  margin: 0;
+  font-size: 0.95rem;
+}

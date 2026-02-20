@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './Login.css'
 
 function Login() {
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -39,6 +41,7 @@ function Login() {
             headers: {
               'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify({ idToken })
           })
 
@@ -50,6 +53,7 @@ function Login() {
           }
 
           console.log('로그인 성공', data)
+          navigate('/', { replace: true })
         } catch (error) {
           console.error(error)
           setErrorMessage('서버와 통신할 수 없어요.')
