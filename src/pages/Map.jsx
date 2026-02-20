@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Map, { Marker, Popup } from 'react-map-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import StatusBar from '../components/StatusBar'
@@ -41,6 +42,7 @@ function formatMonth(isoDate) {
 }
 
 function MapPage() {
+  const navigate = useNavigate()
   const mapRef = useRef()
   const [mapFilters, setMapFilters] = useState(FALLBACK_FILTERS)
   const [festivalMarkers, setFestivalMarkers] = useState([])
@@ -220,7 +222,7 @@ function MapPage() {
           <h1 className="map-title">지도</h1>
           <div className="map-header-actions">
             <button type="button" className="icon-btn map-icon-btn" aria-label="검색"><SearchIcon /></button>
-            <button type="button" className="icon-btn map-icon-btn" aria-label="알림"><NotificationIcon /></button>
+            <button type="button" className="icon-btn map-icon-btn" aria-label="알림" onClick={() => navigate('/notifications')}><NotificationIcon /></button>
           </div>
         </header>
         <div className="map-filters">

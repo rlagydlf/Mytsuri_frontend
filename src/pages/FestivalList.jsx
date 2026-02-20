@@ -4,6 +4,14 @@ import StatusBar from '../components/StatusBar'
 import NavigationBar from '../components/NavigationBar'
 import './FestivalList.css'
 
+const CITY_TABS = [
+  { id: 'kyoto', label: '교토' },
+  { id: 'osaka', label: '오사카' },
+  { id: 'nagoya', label: '나고야' },
+  { id: 'tokyo', label: '도쿄' },
+  { id: 'fukuoka', label: '후쿠오카' },
+]
+
 const SEASON_TABS = [
   { id: 'summer', label: '여름' },
   { id: 'winter', label: '겨울' },
@@ -24,6 +32,7 @@ const FESTIVAL_LIST = [
     bookmarkCount: 102,
     image: 'https://images.unsplash.com/photo-1482517967863-00e15c9b44be?w=400',
     season: 'winter',
+    city: null,
   },
   {
     id: 2,
@@ -35,6 +44,7 @@ const FESTIVAL_LIST = [
     bookmarkCount: 124,
     image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400',
     season: 'winter',
+    city: null,
   },
   {
     id: 3,
@@ -46,6 +56,7 @@ const FESTIVAL_LIST = [
     bookmarkCount: 124,
     image: 'https://images.unsplash.com/photo-1512389142860-9c449e58a943?w=400',
     season: 'winter',
+    city: null,
   },
   {
     id: 4,
@@ -57,6 +68,7 @@ const FESTIVAL_LIST = [
     bookmarkCount: 67,
     image: 'https://images.unsplash.com/photo-1491002052546-bf38f186af56?w=400',
     season: 'winter',
+    city: null,
   },
   {
     id: 5,
@@ -68,6 +80,7 @@ const FESTIVAL_LIST = [
     bookmarkCount: 280,
     image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400',
     season: 'summer',
+    city: null,
   },
   {
     id: 6,
@@ -79,6 +92,7 @@ const FESTIVAL_LIST = [
     bookmarkCount: 520,
     image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400',
     season: 'summer',
+    city: 'kyoto',
   },
   {
     id: 7,
@@ -90,6 +104,7 @@ const FESTIVAL_LIST = [
     bookmarkCount: 453,
     image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400',
     season: 'spring',
+    city: 'nagoya',
   },
   {
     id: 8,
@@ -101,6 +116,7 @@ const FESTIVAL_LIST = [
     bookmarkCount: 167,
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
     season: 'autumn',
+    city: null,
   },
   {
     id: 9,
@@ -112,6 +128,7 @@ const FESTIVAL_LIST = [
     bookmarkCount: 189,
     image: 'https://images.unsplash.com/photo-1569718212165-3a2854114a6e?w=400',
     season: 'food',
+    city: 'tokyo',
   },
   {
     id: 10,
@@ -123,6 +140,31 @@ const FESTIVAL_LIST = [
     bookmarkCount: 98,
     image: 'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=400',
     season: 'local',
+    city: null,
+  },
+  {
+    id: 11,
+    title: '오사카 덴진 마츠리',
+    location: '오사카부 오사카시',
+    date: '2026년 7월',
+    rating: 4.7,
+    reviewCount: 289,
+    bookmarkCount: 312,
+    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400',
+    season: 'summer',
+    city: 'osaka',
+  },
+  {
+    id: 12,
+    title: '후쿠오카 하카타 기온',
+    location: '후쿠오카현 후쿠오카시',
+    date: '2026년 7월',
+    rating: 4.8,
+    reviewCount: 421,
+    bookmarkCount: 398,
+    image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400',
+    season: 'summer',
+    city: 'fukuoka',
   },
 ]
 
@@ -144,30 +186,52 @@ function CalendarIcon() {
 
 function FestivalList() {
   const navigate = useNavigate()
-  const { category } = useParams()
+  const { category, cityId } = useParams()
   const [activeTab, setActiveTab] = useState(() => {
-    if (category && category !== 'categories' && SEASON_TABS.some((t) => t.id === category)) {
+    if (category && category !== 'categories' && category !== 'city' && SEASON_TABS.some((t) => t.id === category)) {
       return category
     }
     return 'summer'
   })
 
   useEffect(() => {
-    if (category && category !== 'categories' && SEASON_TABS.some((t) => t.id === category)) {
+    if (category && category !== 'categories' && category !== 'city' && SEASON_TABS.some((t) => t.id === category)) {
       setActiveTab(category)
     }
   }, [category])
 
+  const filteredList = FESTIVAL_LIST.filter((f) => {
+    if (cityId) return f.city === cityId
+    if (f.season !== activeTab) return false
+    return true
+  })
+
   return (
-    <div className="festival-list-page">
+    <div className={`festival-list-page ${cityId ? 'festival-list-page--with-cities' : ''}`}>
       <div className="festival-list-top-fixed">
         <StatusBar />
         <header className="festival-list-header">
-          <button type="button" className="festival-list-back" onClick={() => navigate(-1)} aria-label="뒤로">
+          <button type="button" className="festival-list-back" onClick={() => navigate('/')} aria-label="뒤로">
             <BackIcon />
           </button>
         </header>
 
+        {cityId && (
+          <div className="festival-list-cities">
+            {CITY_TABS.map((city) => (
+              <button
+                key={city.id}
+                type="button"
+                className={`festival-list-city ${cityId === city.id ? 'festival-list-city--active' : ''}`}
+                onClick={() => navigate(`/festivals/city/${city.id}`)}
+              >
+                {city.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {!cityId && (
         <div className="festival-list-tabs">
           {SEASON_TABS.map((tab) => (
             <button
@@ -180,12 +244,13 @@ function FestivalList() {
             </button>
           ))}
         </div>
+        )}
       </div>
 
       <main className="festival-list-main">
         <ul className="festival-list">
-          {FESTIVAL_LIST.filter((f) => f.season === activeTab).length > 0
-            ? FESTIVAL_LIST.filter((f) => f.season === activeTab).map((item) => (
+          {filteredList.length > 0
+            ? filteredList.map((item) => (
                 <li key={item.id} className="festival-list-card">
                   <div className="festival-list-card-image">
                     <img src={item.image} alt={item.title} />
@@ -213,7 +278,7 @@ function FestivalList() {
                   </div>
                 </li>
               ))
-            : FESTIVAL_LIST.map((item) => (
+            : filteredList.map((item) => (
                 <li key={item.id} className="festival-list-card">
                   <div className="festival-list-card-image">
                     <img src={item.image} alt={item.title} />
