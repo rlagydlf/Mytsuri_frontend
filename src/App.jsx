@@ -3,6 +3,10 @@ import { useEffect, useState } from 'react'
 import Login from './pages/Login'
 import Home from './pages/Home'
 import MapPage from './pages/Map'
+import List from './pages/List'
+import Profile from './pages/Profile'
+import FestivalList from './pages/FestivalList'
+import Notification from './pages/Notification'
 
 function App() {
   const location = useLocation()
@@ -54,6 +58,12 @@ function App() {
       <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/" element={isLoggedIn ? <Home /> : <Navigate to="/login" replace />} />
       <Route path="/map" element={isLoggedIn ? <MapPage /> : <Navigate to="/login" replace />} />
+      <Route path="/list" element={<List />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/notifications" element={<Notification />} />
+      <Route path="/festivals" element={<FestivalList />} />
+      <Route path="/festivals/city/:cityId" element={<FestivalList />} />
+      <Route path="/festivals/:category" element={<FestivalList />} />
       <Route path="*" element={<Navigate to={isLoggedIn ? '/' : '/login'} replace />} />
     </Routes>
   )

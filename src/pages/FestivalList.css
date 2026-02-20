@@ -6,6 +6,10 @@
   --top-height: calc(68px + env(safe-area-inset-top, 0px) + 52px + 44px);
 }
 
+.festival-list-page.festival-list-page--with-cities {
+  --top-height: calc(68px + env(safe-area-inset-top, 0px) + 52px + 72px);
+}
+
 .festival-list-top-fixed {
   position: fixed;
   top: 0;
@@ -31,6 +35,52 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.festival-list-cities {
+  display: flex;
+  gap: 12px;
+  padding: 0 20px 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.festival-list-cities::-webkit-scrollbar {
+  display: none;
+}
+
+.festival-list-city {
+  flex: 0 0 auto;
+  padding: 10px 4px 12px;
+  margin-right: 20px;
+  background: none;
+  border: none;
+  color: #F5F5F5;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.festival-list-city:hover {
+  color: #fff;
+}
+
+.festival-list-city--active {
+  color: #F5F5F5;
+}
+
+.festival-list-city--active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: #F5F5F5;
 }
 
 .festival-list-tabs {
@@ -75,7 +125,7 @@
   right: 0;
   bottom: 0;
   height: 2px;
-  background: #FC4A3A;
+  background: #F5F5F5;
 }
 
 .festival-list-main {

@@ -123,7 +123,7 @@ function Home() {
           </Link>
           <div className="home-header-actions">
             <button type="button" className="icon-btn" aria-label="검색"><SearchIcon /></button>
-            <button type="button" className="icon-btn" aria-label="알림"><NotificationIcon /></button>
+            <button type="button" className="icon-btn" aria-label="알림" onClick={() => navigate('/notifications')}><NotificationIcon /></button>
           </div>
         </header>
       </div>
@@ -198,7 +198,12 @@ function Home() {
           <h3 className="section-title">어디로 갈까요?</h3>
           <div className="city-scroll">
             {cities.map((city) => (
-              <button key={city.id} type="button" className="city-item">
+              <button
+                key={city.id}
+                type="button"
+                className="city-item"
+                onClick={() => navigate(`/festivals/city/${city.id}`)}
+              >
                 <img src={city.image} alt={city.label} className="city-item-image" />
               </button>
             ))}
