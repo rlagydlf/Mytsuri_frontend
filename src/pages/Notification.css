@@ -19,15 +19,13 @@
 .notification-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  position: relative;
+  justify-content: flex-start;
+  gap: 8px;
   padding: 12px 20px;
   min-height: 44px;
 }
 
 .notification-back {
-  position: absolute;
-  left: 12px;
   padding: 8px;
   background: none;
   border: none;
@@ -45,6 +43,10 @@
 }
 
 .notification-main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding-top: var(--top-height);
   padding-left: 20px;
   padding-right: 20px;
@@ -54,7 +56,7 @@
 .notification-list {
   list-style: none;
   margin: 0;
-  padding: 16px 0 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -62,15 +64,16 @@
 
 .notification-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  padding: 16px 0;
-  border-bottom: 1px solid #9E9E9E;
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   position: relative;
 }
 
 .notification-item:last-child {
   border-bottom: none;
+  padding-bottom: 20px;
 }
 
 .notification-item-icon {
@@ -78,7 +81,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 2px;
+  align-self: center;
 }
 
 .notification-item-icon--list {
@@ -94,25 +97,43 @@
 .notification-item-body {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+}
+
+.notification-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+  min-width: 0;
 }
 
 .notification-item-title {
-  margin: 0 0 6px;
-  font-size: 1rem;
+  margin: 0;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #F5F5F5;
-}
-
-.notification-item-text {
-  margin: 0 0 8px;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: rgba(245, 245, 245, 0.75);
+  text-align: left;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .notification-item-time {
   font-size: 0.75rem;
-  color: rgba(245, 245, 245, 0.5);
+  color: #9E9E9E;
+  flex-shrink: 0;
+}
+
+.notification-item-text {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #F5F5F5;
+  overflow-wrap: break-word;
+  word-break: keep-all;
 }
 
 .notification-empty {

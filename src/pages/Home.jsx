@@ -122,7 +122,7 @@ function Home() {
             <img src="/assets/logo_home.svg" alt="Mytsuri" />
           </Link>
           <div className="home-header-actions">
-            <button type="button" className="icon-btn" aria-label="검색"><SearchIcon /></button>
+            <button type="button" className="icon-btn" aria-label="검색" onClick={() => navigate('/search')}><SearchIcon /></button>
             <button type="button" className="icon-btn" aria-label="알림" onClick={() => navigate('/notifications')}><NotificationIcon /></button>
           </div>
         </header>

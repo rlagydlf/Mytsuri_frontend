@@ -7,6 +7,7 @@ import List from './pages/List'
 import Profile from './pages/Profile'
 import FestivalList from './pages/FestivalList'
 import Notification from './pages/Notification'
+import Search from './pages/Search'
 
 function App() {
   const location = useLocation()
@@ -55,7 +56,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <Login />} />
+      {/* <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/" element={isLoggedIn ? <Home /> : <Navigate to="/login" replace />} />
       <Route path="/map" element={isLoggedIn ? <MapPage /> : <Navigate to="/login" replace />} />
       <Route path="/list" element={<List />} />
@@ -64,7 +65,17 @@ function App() {
       <Route path="/festivals" element={<FestivalList />} />
       <Route path="/festivals/city/:cityId" element={<FestivalList />} />
       <Route path="/festivals/:category" element={<FestivalList />} />
-      <Route path="*" element={<Navigate to={isLoggedIn ? '/' : '/login'} replace />} />
+      <Route path="*" element={<Navigate to={isLoggedIn ? '/' : '/login'} replace />} /> */}
+      <Route path="/" element={<Home />} />
+      <Route path="/map" element={<MapPage />} />
+      <Route path="/list" element={<List />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/notifications" element={<Notification />} />
+      <Route path="/search" element={<Search />} />
+      <Route path="/festivals" element={<FestivalList />} />
+      <Route path="/festivals/city/:cityId" element={<FestivalList />} />
+      <Route path="/festivals/:category" element={<FestivalList />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

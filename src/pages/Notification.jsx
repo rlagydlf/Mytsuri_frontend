@@ -3,8 +3,8 @@ import StatusBar from '../components/StatusBar'
 import './Notification.css'
 
 const NOTIFICATIONS = [
-  { id: 1, type: 'list', title: '리스트 관련 알람', body: '저장한 리스트에 새로운 축제가 추가되었어요.', time: '10분 전' },
-  { id: 2, type: 'festival', title: '내축제 관련 알람', body: '북마크한 축제가 곧 시작됩니다. 일정을 확인해보세요!', time: '1시간 전' },
+  { id: 1, type: 'list', title: '리스트', body: '친구가 새로운 축제를 추가했어요.', time: '2월 20일' },
+  { id: 2, type: 'festival', title: '내 축제', body: '내가 찜한 구본오도리가 곧 개최돼요!', time: '1월 30일' },
 ]
 
 function BackIcon() {
@@ -47,9 +47,11 @@ function Notification() {
                   {item.type === 'list' ? null : <CheckIcon />}
                 </span>
                 <div className="notification-item-body">
-                  <h3 className="notification-item-title">{item.title}</h3>
+                  <div className="notification-item-row">
+                    <h3 className="notification-item-title">{item.title}</h3>
+                    <span className="notification-item-time">{item.time}</span>
+                  </div>
                   <p className="notification-item-text">{item.body}</p>
-                  <span className="notification-item-time">{item.time}</span>
                 </div>
               </li>
             ))}
