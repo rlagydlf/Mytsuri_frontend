@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import NavigationBar from '../components/NavigationBar'
 import StatusBar from '../components/StatusBar'
@@ -46,9 +46,12 @@ const FESTIVAL_CARDS = [
   { ...FESTIVAL_CARD, id: 4, title: '나고야 봄 축제', location: '나고야현 나고야성', date: '2026년 3월 20일 ~ 4월 6일', rating: 4.2, reviewCount: 126, bookmarkCount: 453 },
 ]
 
+const SWIPE_THRESHOLD = 50
+
 function Home() {
   const navigate = useNavigate()
   const [currentSlide, setCurrentSlide] = useState(0)
+  const touchStartX = useRef(0)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -56,6 +59,22 @@ function Home() {
     }, 4000)
     return () => clearInterval(timer)
   }, [])
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e) => {
+    const endX = e.changedTouches[0].clientX
+    const deltaX = touchStartX.current - endX
+    const total = BANNER_SLIDES.length
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD) return
+    if (deltaX > 0) {
+      setCurrentSlide((prev) => (prev + 1) % total)
+    } else {
+      setCurrentSlide((prev) => (prev - 1 + total) % total)
+    }
+  }
 
   return (
     <div className="home-page">
@@ -73,7 +92,11 @@ function Home() {
       </div>
 
       <main className="home-main">
-        <section className="banner-slider">
+        <section
+          className="banner-slider"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="banner-track" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
             {BANNER_SLIDES.map((slide) => (
               <div key={slide.id} className="banner-slide">

@@ -70,6 +70,7 @@
   overflow: hidden;
   aspect-ratio: 16 / 10;
   border: 1px solid #fff;
+  touch-action: pan-y;
 }
 
 .banner-track {

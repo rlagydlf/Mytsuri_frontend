@@ -3,9 +3,13 @@ import Map, { Marker, Popup } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import StatusBar from '../components/StatusBar'
 import NavigationBar from '../components/NavigationBar'
+import RegionSelectSheet from '../components/RegionSelectSheet/RegionSelectSheet'
+import DateSelectSheet from '../components/DateSelectSheet/DateSelectSheet'
+import TypeSelectSheet from '../components/TypeSelectSheet/TypeSelectSheet'
+import { PREFECTURE_BOUNDS, JAPAN_BOUNDS } from '../data/regions'
 import './Map.css'
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
 
 const MAP_FILTERS = [
   { id: 'all', label: '전체', active: true },
@@ -42,6 +46,12 @@ function MapPage() {
   const [activeFilter, setActiveFilter] = useState('all')
   const [selectedMarker, setSelectedMarker] = useState(null)
   const [userLocation, setUserLocation] = useState(null)
+  const [regionSheetOpen, setRegionSheetOpen] = useState(false)
+  const [selectedPrefecture, setSelectedPrefecture] = useState(null)
+  const [dateSheetOpen, setDateSheetOpen] = useState(false)
+  const [selectedDateRange, setSelectedDateRange] = useState(null)
+  const [typeSheetOpen, setTypeSheetOpen] = useState(false)
+  const [selectedType, setSelectedType] = useState(null)
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -51,6 +61,20 @@ function MapPage() {
       )
     }
   }, [])
+
+  useEffect(() => {
+    if (userLocation && mapRef.current) {
+      mapRef.current.flyTo({ center: [userLocation.lon, userLocation.lat], zoom: 14 })
+    }
+  }, [userLocation])
+
+  useEffect(() => {
+    if (!selectedPrefecture || !mapRef.current) return
+    const bounds = PREFECTURE_BOUNDS[selectedPrefecture]
+    if (bounds) {
+      mapRef.current.fitBounds(bounds, { padding: 48, duration: 800 })
+    }
+  }, [selectedPrefecture])
 
   const handleCurrentLocation = useCallback(() => {
     if (userLocation && mapRef.current) {
@@ -82,18 +106,74 @@ function MapPage() {
           </div>
         </header>
         <div className="map-filters">
-          {MAP_FILTERS.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              className={`map-filter-btn ${activeFilter === f.id ? 'map-filter-btn--active' : ''}`}
-              onClick={() => setActiveFilter(f.id)}
-            >
-              {f.icon === 'location' && <LocationIcon />}
-              {f.icon === 'calendar' && <CalendarIcon />}
-              {f.label}
-            </button>
-          ))}
+          {MAP_FILTERS.map((f) => {
+            const isRegionFilter = f.id === 'region'
+            const isDateFilter = f.id === 'date'
+            const isTypeFilter = f.id === 'type'
+            const handleClick = isRegionFilter
+              ? () => {
+                  if (regionSheetOpen) {
+                    setSelectedPrefecture(null)
+                    setRegionSheetOpen(false)
+                  } else {
+                    setActiveFilter('region')
+                    setRegionSheetOpen(true)
+                  }
+                }
+              : isDateFilter
+                ? () => {
+                    if (dateSheetOpen) {
+                      setSelectedDateRange(null)
+                      setDateSheetOpen(false)
+                    } else {
+                      setActiveFilter('date')
+                      setDateSheetOpen(true)
+                    }
+                  }
+                : isTypeFilter
+                  ? () => {
+                      if (typeSheetOpen) {
+                        setSelectedType(null)
+                        setTypeSheetOpen(false)
+                      } else {
+                        setActiveFilter('type')
+                        setTypeSheetOpen(true)
+                      }
+                    }
+                  : (f.id === 'all'
+                    ? () => {
+                        setActiveFilter('all')
+                        setSelectedPrefecture(null)
+                        setSelectedDateRange(null)
+                        setSelectedType(null)
+                        setRegionSheetOpen(false)
+                        setDateSheetOpen(false)
+                        setTypeSheetOpen(false)
+                        if (mapRef.current) {
+                          mapRef.current.fitBounds(JAPAN_BOUNDS, { padding: 48, duration: 800 })
+                        }
+                      }
+                    : () => setActiveFilter(f.id))
+            const label = isRegionFilter && selectedPrefecture
+              ? selectedPrefecture
+              : isDateFilter && selectedDateRange
+                ? selectedDateRange.label
+                : isTypeFilter && selectedType
+                  ? selectedType.name
+                  : f.label
+            return (
+              <button
+                key={f.id}
+                type="button"
+                className={`map-filter-btn ${(f.id === 'all' && !selectedPrefecture && !selectedDateRange && !selectedType) || activeFilter === f.id || (isRegionFilter && selectedPrefecture) || (isDateFilter && selectedDateRange) || (isTypeFilter && selectedType) ? 'map-filter-btn--active' : ''}`}
+                onClick={handleClick}
+              >
+                {f.icon === 'location' && <LocationIcon />}
+                {f.icon === 'calendar' && <CalendarIcon />}
+                {label}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -179,6 +259,24 @@ function MapPage() {
           </div>
         )}
       </div>
+
+      <RegionSelectSheet
+        isOpen={regionSheetOpen}
+        onClose={() => setRegionSheetOpen(false)}
+        onSelect={setSelectedPrefecture}
+      />
+
+      <DateSelectSheet
+        isOpen={dateSheetOpen}
+        onClose={() => setDateSheetOpen(false)}
+        onSelect={setSelectedDateRange}
+      />
+
+      <TypeSelectSheet
+        isOpen={typeSheetOpen}
+        onClose={() => setTypeSheetOpen(false)}
+        onSelect={setSelectedType}
+      />
 
       <NavigationBar />
     </div>

@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import './NavigationBar.css'
 
 const NAV_ITEMS = [
@@ -9,32 +9,41 @@ const NAV_ITEMS = [
 ]
 
 function NavigationBar() {
+  const location = useLocation()
+  const isHomeSection = location.pathname === '/' || location.pathname.startsWith('/festivals')
+
   return (
     <nav
       className="nav-bar"
       role="navigation"
       aria-label="하단 메뉴"
     >
-      {NAV_ITEMS.map((item) => (
+      {NAV_ITEMS.map((item) => {
+        const isActive = item.to === '/' ? isHomeSection : undefined
+        return (
         <NavLink
           key={item.to}
           to={item.to}
           end={item.end}
-          className={({ isActive }) => `nav-item ${isActive ? 'nav-item--active' : ''}`}
+          className={({ isActive: navIsActive }) => `nav-item ${(isActive !== undefined ? isActive : navIsActive) ? 'nav-item--active' : ''}`}
         >
-          {({ isActive }) => (
+          {({ isActive: navIsActive }) => {
+            const active = isActive !== undefined ? isActive : navIsActive
+            return (
             <>
               <img
-                src={isActive ? item.activeIcon : item.inactiveIcon}
+                src={active ? item.activeIcon : item.inactiveIcon}
                 alt=""
                 className="nav-icon"
                 aria-hidden={true}
               />
               <span className="nav-label">{item.label}</span>
             </>
-          )}
+          )
+          }}
         </NavLink>
-      ))}
+        )
+      })}
     </nav>
   )
 }

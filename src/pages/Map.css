@@ -82,9 +82,9 @@
 }
 
 .map-filter-btn--active {
-  background: #e53935;
+  background: transparent;
   border-color: #e53935;
-  color: #fff;
+  color: #e53935;
 }
 
 .map-filter-btn svg {

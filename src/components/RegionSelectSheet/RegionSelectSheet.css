@@ -1,0 +1,152 @@
+.region-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: region-backdrop-fade 0.25s ease-out;
+}
+
+@keyframes region-backdrop-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.region-sheet {
+  width: 100%;
+  max-width: 480px;
+  max-height: 70vh;
+  background: #070707;
+  border-radius: 20px 20px 0 0;
+  padding: 12px 20px 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  animation: region-sheet-slide 0.3s ease-out;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes region-sheet-slide {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.region-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+  flex-shrink: 0;
+}
+
+.region-sheet-title {
+  margin: 0 0 20px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #F5F5F5;
+  flex-shrink: 0;
+}
+
+.region-sheet-content {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.region-list-section {
+  margin-bottom: 24px;
+}
+
+.region-list-label {
+  margin: 0 0 12px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #F5F5F5;
+}
+
+.region-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.region-chip {
+  padding: 10px 12px;
+  width: fit-content;
+  border-radius: 24px;
+  border: none;
+  background: transparent;
+  color: #F5F5F5;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.region-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.region-chip--active {
+  border: 1px solid #FEFFFE;
+  color: #FEFFFE;
+  background: transparent;
+}
+
+.prefecture-list-section {
+  margin-top: 20px;
+  padding: 16px;
+  background: #212121;
+  border-radius: 12px;
+}
+
+.prefecture-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.prefecture-chip {
+  padding: 10px 12px;
+  border-radius: 24px;
+  border: none;
+  background: transparent;
+  color: #F5F5F5;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.prefecture-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.prefecture-chip--active {
+  color: #FC4A3A;
+  background: rgba(252, 74, 58, 0.15);
+}
+
+.region-sheet-done-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #FC4A3A;
+  background: #070707;
+  color: #FC4A3A;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.region-sheet-done-btn:hover {
+  opacity: 0.9;
+}
