@@ -34,13 +34,13 @@
 }
 
 .nav-item--active .nav-icon {
-  width: 56px;
-  height: 56px;
+  width: 70px;
+  height: 70px;
 }
 
 .nav-icon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   display: block;
   transition: width 0.2s, height 0.2s;
 }

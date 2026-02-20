@@ -1,0 +1,202 @@
+.map-page {
+  position: relative;
+  min-height: 100vh;
+  background: #000;
+  padding-bottom: 80px;
+  --map-header-height: calc(68px + env(safe-area-inset-top, 0px) + 60px + 48px);
+}
+
+.map-top-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: #000;
+}
+
+.map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #000;
+}
+
+.map-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.map-header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.map-icon-btn {
+  padding: 8px;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-filters {
+  display: flex;
+  gap: 12px;
+  padding: 0 20px 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.map-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.map-filter-btn {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.map-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.map-filter-btn--active {
+  background: #e53935;
+  border-color: #e53935;
+  color: #fff;
+}
+
+.map-filter-btn svg {
+  flex-shrink: 0;
+}
+
+.map-container {
+  position: fixed;
+  top: var(--map-header-height);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: calc(100vh - var(--map-header-height) - 80px);
+}
+
+.map-token-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 24px;
+  color: #fff;
+  text-align: center;
+  gap: 8px;
+}
+
+.map-token-message a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.map-marker-img {
+  cursor: pointer;
+  display: block;
+}
+
+/* User current location: red circle */
+.map-user-location {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #FC4A3A;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 2px rgba(252, 74, 58, 0.5);
+  pointer-events: none;
+}
+
+.map-callout-popup .mapboxgl-popup-content {
+  padding: 0;
+  background: rgba(60, 60, 60, 0.95);
+  border-radius: 20px;
+  box-shadow: none;
+}
+
+.map-callout-popup .mapboxgl-popup-tip {
+  border-top-color: rgba(60, 60, 60, 0.95);
+}
+
+.map-callout-content {
+  padding: 10px 16px;
+  white-space: nowrap;
+}
+
+.map-callout-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.map-callout-subtitle {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.map-location-btn {
+  position: absolute;
+  right: 16px;
+  bottom: 48px;
+  z-index: 100;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.map-location-btn:hover {
+  opacity: 0.9;
+}
+
+.map-location-btn img {
+  display: block;
+}
+
+/* Mapbox 저작권 표기(오른쪽 아래) - 어두운 테마로 맞춤 */
+.map-container .mapboxgl-ctrl-attrib {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+.map-container .mapboxgl-ctrl-attrib a {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.map-container .mapboxgl-ctrl-logo {
+  opacity: 0.85;
+}

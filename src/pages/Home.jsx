@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import NavigationBar from '../components/NavigationBar'
 import StatusBar from '../components/StatusBar'
 import './Home.css'
@@ -47,71 +47,15 @@ const FESTIVAL_CARDS = [
 ]
 
 function Home() {
+  const navigate = useNavigate()
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [banners, setBanners] = useState(BANNER_SLIDES)
-  const [categories, setCategories] = useState(CATEGORIES)
-  const [cities, setCities] = useState(CITIES)
-  const [festivals, setFestivals] = useState(FESTIVAL_CARDS)
-  const [loadError, setLoadError] = useState('')
 
   useEffect(() => {
-    let isMounted = true
-    const controller = new AbortController()
-
-    const fetchData = async () => {
-      try {
-        setLoadError('')
-        const [bannersRes, categoriesRes, citiesRes, festivalsRes] = await Promise.all([
-          fetch('http://localhost:5000/api/home/banners', { signal: controller.signal }),
-          fetch('http://localhost:5000/api/home/categories', { signal: controller.signal }),
-          fetch('http://localhost:5000/api/home/cities', { signal: controller.signal }),
-          fetch('http://localhost:5000/api/home/festivals', { signal: controller.signal })
-        ])
-
-        if (!bannersRes.ok || !categoriesRes.ok || !citiesRes.ok || !festivalsRes.ok) {
-          throw new Error('홈 데이터를 불러오지 못했어요.')
-        }
-
-        const [bannersData, categoriesData, citiesData, festivalsData] = await Promise.all([
-          bannersRes.json(),
-          categoriesRes.json(),
-          citiesRes.json(),
-          festivalsRes.json()
-        ])
-
-        if (isMounted) {
-          setBanners(Array.isArray(bannersData) && bannersData.length ? bannersData : BANNER_SLIDES)
-          setCategories(Array.isArray(categoriesData) && categoriesData.length ? categoriesData : CATEGORIES)
-          setCities(Array.isArray(citiesData) && citiesData.length ? citiesData : CITIES)
-          setFestivals(Array.isArray(festivalsData) && festivalsData.length ? festivalsData : FESTIVAL_CARDS)
-        }
-      } catch (error) {
-        if (error.name === 'AbortError') {
-          return
-        }
-        if (isMounted) {
-          setLoadError('홈 데이터를 불러오지 못했어요.')
-        }
-      }
-    }
-
-    fetchData()
-
-    return () => {
-      isMounted = false
-      controller.abort()
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!banners.length) {
-      return undefined
-    }
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % banners.length)
+      setCurrentSlide((prev) => (prev + 1) % BANNER_SLIDES.length)
     }, 4000)
     return () => clearInterval(timer)
-  }, [banners.length])
+  }, [])
 
   return (
     <div className="home-page">
@@ -131,7 +75,7 @@ function Home() {
       <main className="home-main">
         <section className="banner-slider">
           <div className="banner-track" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
-            {banners.map((slide) => (
+            {BANNER_SLIDES.map((slide) => (
               <div key={slide.id} className="banner-slide">
                 <img src={slide.image} alt={slide.title} />
                 <div className="banner-overlay">
@@ -142,7 +86,7 @@ function Home() {
             ))}
           </div>
           <div className="banner-dots">
-            {banners.map((_, i) => (
+            {BANNER_SLIDES.map((_, i) => (
               <button key={i} type="button" className={`banner-dot ${i === currentSlide ? 'active' : ''}`} onClick={() => setCurrentSlide(i)} aria-label={`${i + 1}번 슬라이드`} />
             ))}
           </div>
@@ -150,8 +94,13 @@ function Home() {
 
         <section className="category-section">
           <div className="category-scroll">
-            {categories.map((cat) => (
-              <button key={cat.id} type="button" className="category-item">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                className="category-item"
+                onClick={() => navigate(`/festivals/${cat.id}`)}
+              >
                 <span className="category-icon">{cat.icon}</span>
                 <span className="category-label">{cat.label}</span>
               </button>
@@ -168,7 +117,7 @@ function Home() {
             <button type="button" className="section-more" aria-label="더보기"><ArrowIcon /></button>
           </div>
           <div className="festival-scroll">
-            {festivals.map((card) => <FestivalCard key={card.id} data={card} />)}
+            {FESTIVAL_CARDS.map((card) => <FestivalCard key={card.id} data={card} />)}
           </div>
         </section>
 
@@ -181,14 +130,14 @@ function Home() {
             <button type="button" className="section-more" aria-label="더보기"><ArrowIcon /></button>
           </div>
           <div className="festival-scroll">
-            {festivals.map((card) => <FestivalCard key={`r-${card.id}`} data={card} />)}
+            {FESTIVAL_CARDS.map((card) => <FestivalCard key={`r-${card.id}`} data={{ ...card, id: card.id + 10 }} />)}
           </div>
         </section>
 
         <section className="city-section">
           <h3 className="section-title">어디로 갈까요?</h3>
           <div className="city-scroll">
-            {cities.map((city) => (
+            {CITIES.map((city) => (
               <button key={city.id} type="button" className="city-item">
                 <img src={city.image} alt={city.label} className="city-item-image" />
               </button>
@@ -205,15 +154,9 @@ function Home() {
             <button type="button" className="section-more" aria-label="더보기"><ArrowIcon /></button>
           </div>
           <div className="festival-scroll">
-            {festivals.map((card) => <FestivalCard key={`s-${card.id}`} data={card} />)}
+            {FESTIVAL_CARDS.map((card) => <FestivalCard key={`s-${card.id}`} data={{ ...card, id: card.id + 20 }} />)}
           </div>
         </section>
-
-        {loadError ? (
-          <p className="home-load-error" role="alert">
-            {loadError}
-          </p>
-        ) : null}
 
         <div className="home-bottom-pad" />
       </main>
