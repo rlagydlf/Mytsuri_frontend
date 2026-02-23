@@ -13,14 +13,6 @@ const FALLBACK_FILTERS = [
   { id: 'type', label: '종류', icon: null },
 ]
 
-const RECENT_SEARCHES = ['기후', '빙수', '유카타', '주변', '구마모토', '야키소바', '교토', '불꽃']
-
-const POPULAR_FESTIVALS = [
-  { id: 1, image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400', title: '타카야마 여름 축제', location: '기후현 타카야마시', date: '2026년 7월', rating: 4.8, reviewCount: 231, bookmarkCount: 124 },
-  { id: 2, image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400', title: '타카야마 여름 축제', location: '기후현 타카야마시', date: '2026년 7월', rating: 4.8, reviewCount: 231, bookmarkCount: 124 },
-  { id: 3, image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400', title: '타카야마 여름 축제', location: '기후현 타카야마시', date: '2026년 7월', rating: 4.8, reviewCount: 231, bookmarkCount: 124 },
-]
-
 function SearchIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -67,20 +59,27 @@ function Search() {
   const [dateSheetOpen, setDateSheetOpen] = useState(false)
   const [typeSheetOpen, setTypeSheetOpen] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  
+  // 추가 상태
+  const [recentSearches, setRecentSearches] = useState(() => {
+    // 초기값: localStorage에서 불러오기
+    const localHistory = localStorage.getItem('recentSearches')
+    return localHistory ? JSON.parse(localHistory) : []
+  })
+  const [popularFestivals, setPopularFestivals] = useState([])
+  const [searchResults, setSearchResults] = useState([])
+  const [loading, setLoading] = useState(false)
 
-  const handleSearchKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      setShowFilters(true)
-    }
-  }
-
+  // 필터 불러오기
   useEffect(() => {
     let isMounted = true
     const controller = new AbortController()
     const fetchFilters = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/map/filters', { signal: controller.signal })
+        const res = await fetch('http://localhost:5000/api/map/filters', { 
+          signal: controller.signal,
+          credentials: 'include'
+        })
         if (!res.ok) return
         const data = await res.json()
         if (isMounted && Array.isArray(data)) setSearchFilters(data)
@@ -95,6 +94,220 @@ function Search() {
     }
   }, [])
 
+  // 최근 검색어 불러오기 (로그인 사용자는 서버에서, 비로그인은 이미 localStorage에서 초기화됨)
+  useEffect(() => {
+    const fetchRecentSearches = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/search/history', {
+          credentials: 'include'
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        // 서버에서 데이터가 있으면 업데이트
+        if (data && data.length > 0) {
+          setRecentSearches(data)
+        }
+      } catch (error) {
+        // 에러 시 localStorage 유지
+      }
+    }
+    fetchRecentSearches()
+  }, [])
+
+  // 인기 축제 불러오기
+  useEffect(() => {
+    const fetchPopular = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/search/popular')
+        if (!res.ok) return
+        const data = await res.json()
+        setPopularFestivals(data)
+      } catch (error) {
+        console.error('인기 축제 불러오기 실패:', error)
+      }
+    }
+    fetchPopular()
+  }, [])
+
+  // 검색 실행
+  const handleSearch = async () => {
+    if (!query.trim()) return
+    
+    setShowFilters(true)
+    setLoading(true)
+
+    try {
+      // 검색어 저장
+      await saveSearchHistory(query.trim())
+
+      // 검색 API 호출
+      const params = new URLSearchParams({ q: query.trim() })
+      
+      console.log("필터 상태:", {
+        selectedPrefecture,
+        selectedDateRange,
+        selectedType
+      })
+      
+      // 날짜 범위 상세 로그
+      if (selectedDateRange) {
+        console.log("selectedDateRange 상세:", {
+          startDate: selectedDateRange.startDate,
+          endDate: selectedDateRange.endDate,
+          label: selectedDateRange.label,
+          hasStartDate: !!selectedDateRange.startDate,
+          hasEndDate: !!selectedDateRange.endDate,
+          startIsDate: selectedDateRange.startDate instanceof Date,
+          endIsDate: selectedDateRange.endDate instanceof Date
+        })
+      }
+      
+      if (selectedPrefecture) params.append('prefecture', selectedPrefecture)
+      if (selectedDateRange?.startDate && selectedDateRange?.endDate) {
+        console.log("날짜 필터 추가 시도:", {
+          startDate: selectedDateRange.startDate.toISOString().split('T')[0],
+          endDate: selectedDateRange.endDate.toISOString().split('T')[0]
+        })
+        params.append('startDate', selectedDateRange.startDate.toISOString().split('T')[0])
+        params.append('endDate', selectedDateRange.endDate.toISOString().split('T')[0])
+      }
+      // selectedType은 { id, name } 객체
+      if (selectedType?.id) {
+        console.log("종류 필터 추가:", { id: selectedType.id, name: selectedType.name })
+        // 데이터베이스 값과 매칭: "여름 축제" -> "여름축제"
+        params.append('type', selectedType.name.replace(/\s+/g, ''))
+      }
+
+      console.log("전송 파라미터:", params.toString())
+
+      const res = await fetch(`http://localhost:5000/api/search?${params.toString()}`, {
+        credentials: 'include'
+      })
+      
+      if (!res.ok) throw new Error('검색 실패')
+      
+      const data = await res.json()
+      setSearchResults(data)
+    } catch (error) {
+      console.error('검색 에러:', error)
+      setSearchResults([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 검색어 저장
+  const saveSearchHistory = async (searchQuery) => {
+    try {
+      // 서버에 저장 시도 (로그인 사용자)
+      const res = await fetch('http://localhost:5000/api/search/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ query: searchQuery })
+      })
+
+      if (res.status === 401) {
+        // 로그인 안 했으면 로컬스토리지
+        saveToLocalStorage(searchQuery)
+        return
+      }
+
+      if (res.ok) {
+        // 성공하면 최근 검색어 새로고침
+        const historyRes = await fetch('http://localhost:5000/api/search/history', {
+          credentials: 'include'
+        })
+        if (historyRes.ok) {
+          const data = await historyRes.json()
+          setRecentSearches(data)
+        }
+      }
+    } catch (error) {
+      // 에러 시 로컬스토리지
+      saveToLocalStorage(searchQuery)
+    }
+  }
+
+  // 로컬스토리지에 저장
+  const saveToLocalStorage = (searchQuery) => {
+    const existing = localStorage.getItem('recentSearches')
+    let searches = existing ? JSON.parse(existing) : []
+    
+    // 중복 제거
+    searches = searches.filter((s) => s !== searchQuery)
+    // 최신 검색어를 앞에 추가
+    searches.unshift(searchQuery)
+    // 최대 8개만 유지
+    searches = searches.slice(0, 8)
+    
+    localStorage.setItem('recentSearches', JSON.stringify(searches))
+    setRecentSearches(searches)
+  }
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleSearch()
+    }
+  }
+
+  const handleRecentSearchClick = async (term) => {
+    setQuery(term)
+    setShowFilters(true)
+    setLoading(true)
+
+    try {
+      // 검색 API 호출 (term 직접 사용)
+      const params = new URLSearchParams({ q: term.trim() })
+      if (selectedPrefecture) params.append('prefecture', selectedPrefecture)
+      if (selectedDateRange?.start && selectedDateRange?.end) {
+        params.append('startDate', selectedDateRange.start.toISOString().split('T')[0])
+        params.append('endDate', selectedDateRange.end.toISOString().split('T')[0])
+      }
+      if (selectedType?.value) params.append('type', selectedType.value)
+
+      const res = await fetch(`http://localhost:5000/api/search?${params.toString()}`, {
+        credentials: 'include'
+      })
+      
+      if (!res.ok) throw new Error('검색 실패')
+      
+      const data = await res.json()
+      setSearchResults(data)
+    } catch (error) {
+      console.error('검색 에러:', error)
+      setSearchResults([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 필터 변경 시 검색 다시 실행
+  useEffect(() => {
+    if (showFilters && query.trim()) {
+      handleSearch()
+    }
+  }, [selectedPrefecture, selectedDateRange, selectedType])
+
+  // 지역 선택 콜백
+  const handleSelectPrefecture = (prefecture) => {
+    setSelectedPrefecture(prefecture)
+    setRegionSheetOpen(false)
+  }
+
+  // 날짜 선택 콜백
+  const handleSelectDateRange = (dateRange) => {
+    setSelectedDateRange(dateRange)
+    setDateSheetOpen(false)
+  }
+
+  // 종류 선택 콜백
+  const handleSelectType = (type) => {
+    setSelectedType(type)
+    setTypeSheetOpen(false)
+  }
+
   return (
     <div className="search-page">
       <div className={`search-top-fixed ${showFilters ? 'search-top-fixed--with-filters' : ''}`}>
@@ -107,7 +320,7 @@ function Search() {
           <input
             type="search"
             className="search-input"
-            placeholder=""
+            placeholder="축제 검색"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleSearchKeyDown}
@@ -196,52 +409,96 @@ function Search() {
       </div>
 
       <main className={`search-main ${showFilters ? 'search-main--with-filters' : ''}`}>
-        <section className="search-section">
-          <h2 className="search-section-title">최근 검색어</h2>
-          <div className="search-recent-scroll">
-            {RECENT_SEARCHES.map((term) => (
-              <button
-                key={term}
-                type="button"
-                className="search-recent-tag"
-                onClick={() => setQuery(term)}
-              >
-                <ClockIcon />
-                <span>{term}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="search-section">
-          <h2 className="search-section-title">찾아가는 사람이 많은 축제</h2>
-          <ul className="search-festival-list">
-            {POPULAR_FESTIVALS.map((card) => (
-              <li key={card.id}>
-                <article className="search-festival-card">
-                  <div className="search-festival-card-image">
-                    <img src={card.image} alt="" />
-                  </div>
-                  <div className="search-festival-card-body">
-                    <h3 className="search-festival-card-title">{card.title}</h3>
-                    <p className="search-festival-card-location"><LocationIcon /><span>{card.location}</span></p>
-                    <p className="search-festival-card-date"><CalendarIcon /><span>{card.date}</span></p>
-                    <div className="search-festival-card-meta">
-                      <span className="search-festival-card-rating">
-                        <img src="/assets/star_icon.svg" alt="" aria-hidden />
-                        {card.rating}({card.reviewCount})
-                      </span>
-                      <span className="search-festival-card-bookmark">
-                        <img src="/assets/list_icon.svg" alt="" aria-hidden />
-                        {card.bookmarkCount}
-                      </span>
+        {/* 검색 결과 */}
+        {showFilters && searchResults.length > 0 && (
+          <section className="search-section">
+            <h2 className="search-section-title">검색 결과 ({searchResults.length})</h2>
+            <ul className="search-festival-list">
+              {searchResults.map((card) => (
+                <li key={card.id}>
+                  <article className="search-festival-card">
+                    <div className="search-festival-card-image">
+                      <img src={card.image} alt="" />
                     </div>
-                  </div>
-                </article>
-              </li>
-            ))}
-          </ul>
-        </section>
+                    <div className="search-festival-card-body">
+                      <h3 className="search-festival-card-title">{card.title}</h3>
+                      <p className="search-festival-card-location"><LocationIcon /><span>{card.location}</span></p>
+                      <p className="search-festival-card-date"><CalendarIcon /><span>{card.date}</span></p>
+                      <div className="search-festival-card-meta">
+                        <span className="search-festival-card-rating">
+                          <img src="/assets/star_icon.svg" alt="" aria-hidden />
+                          {card.rating}({card.reviewCount})
+                        </span>
+                        <span className="search-festival-card-bookmark">
+                          <img src="/assets/list_icon.svg" alt="" aria-hidden />
+                          {card.bookmarkCount}
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {showFilters && loading && <p className="search-loading">검색 중...</p>}
+        {showFilters && !loading && searchResults.length === 0 && (
+          <p className="search-empty">검색 결과가 없습니다</p>
+        )}
+
+        {/* 최근 검색어 */}
+        {!showFilters && recentSearches.length > 0 && (
+          <section className="search-section">
+            <h2 className="search-section-title">최근 검색어</h2>
+            <div className="search-recent-scroll">
+              {recentSearches.map((term, index) => (
+                <button
+                  key={`${term}-${index}`}
+                  type="button"
+                  className="search-recent-tag"
+                  onClick={() => handleRecentSearchClick(term)}
+                >
+                  <ClockIcon />
+                  <span>{term}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 인기 축제 */}
+        {!showFilters && (
+          <section className="search-section">
+            <h2 className="search-section-title">찾아가는 사람이 많은 축제</h2>
+            <ul className="search-festival-list">
+              {popularFestivals.map((card) => (
+                <li key={card.id}>
+                  <article className="search-festival-card">
+                    <div className="search-festival-card-image">
+                      <img src={card.image} alt="" />
+                    </div>
+                    <div className="search-festival-card-body">
+                      <h3 className="search-festival-card-title">{card.title}</h3>
+                      <p className="search-festival-card-location"><LocationIcon /><span>{card.location}</span></p>
+                      <p className="search-festival-card-date"><CalendarIcon /><span>{card.date}</span></p>
+                      <div className="search-festival-card-meta">
+                        <span className="search-festival-card-rating">
+                          <img src="/assets/star_icon.svg" alt="" aria-hidden />
+                          {card.rating}({card.reviewCount})
+                        </span>
+                        <span className="search-festival-card-bookmark">
+                          <img src="/assets/list_icon.svg" alt="" aria-hidden />
+                          {card.bookmarkCount}
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <div className="search-bottom-pad" />
       </main>
@@ -250,19 +507,19 @@ function Search() {
         key={`region-${regionSheetOpen}`}
         isOpen={regionSheetOpen}
         onClose={() => setRegionSheetOpen(false)}
-        onSelect={setSelectedPrefecture}
+        onSelect={handleSelectPrefecture}
       />
       <DateSelectSheet
         key={`date-${dateSheetOpen}`}
         isOpen={dateSheetOpen}
         onClose={() => setDateSheetOpen(false)}
-        onSelect={setSelectedDateRange}
+        onSelect={handleSelectDateRange}
       />
       <TypeSelectSheet
         key={`type-${typeSheetOpen}`}
         isOpen={typeSheetOpen}
         onClose={() => setTypeSheetOpen(false)}
-        onSelect={setSelectedType}
+        onSelect={handleSelectType}
       />
 
     </div>

@@ -19,7 +19,7 @@ function App() {
 
     const checkAuth = async () => {
       // 로그인이 필요 없는 페이지는 인증 체크 스킵
-      const publicPaths = ['/login', '/festivals', '/list', '/profile', '/notifications']
+      const publicPaths = ['/login', '/festivals', '/list', '/profile', '/notifications', '/search']
       const isPublicPage = publicPaths.some(path => location.pathname.startsWith(path))
       
       if (isPublicPage) {
