@@ -21,153 +21,6 @@ const SEASON_TABS = [
   { id: 'local', label: '특산물' },
 ]
 
-const FESTIVAL_LIST = [
-  {
-    id: 1,
-    title: '아사히카와 겨울 축제',
-    location: '아사히카와 동물원',
-    date: '2026년 2월 6일~11일',
-    rating: 4.4,
-    reviewCount: 151,
-    bookmarkCount: 102,
-    image: 'https://images.unsplash.com/photo-1482517967863-00e15c9b44be?w=400',
-    season: 'winter',
-    city: null,
-  },
-  {
-    id: 2,
-    title: '삿포로 겨울 축제',
-    location: '삿포로 역 앞 거리 외 2곳',
-    date: '2026년 2월 4일~11일',
-    rating: 4.8,
-    reviewCount: 231,
-    bookmarkCount: 124,
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400',
-    season: 'winter',
-    city: null,
-  },
-  {
-    id: 3,
-    title: '조잔케이 눈등로',
-    location: '삿포로 조잔케이신사',
-    date: '2026년 1월 27일~2월 3일',
-    rating: 4.8,
-    reviewCount: 231,
-    bookmarkCount: 124,
-    image: 'https://images.unsplash.com/photo-1512389142860-9c449e58a943?w=400',
-    season: 'winter',
-    city: null,
-  },
-  {
-    id: 4,
-    title: '유니시가와 온천 눈 축제',
-    location: '토치기현 유니시가와',
-    date: '2026년 1월~2월',
-    rating: 4.6,
-    reviewCount: 89,
-    bookmarkCount: 67,
-    image: 'https://images.unsplash.com/photo-1491002052546-bf38f186af56?w=400',
-    season: 'winter',
-    city: null,
-  },
-  {
-    id: 5,
-    title: '아오모리 네부타 제',
-    location: '아오모리현 아오모리시',
-    date: '2026년 8월 2일~7일',
-    rating: 4.8,
-    reviewCount: 312,
-    bookmarkCount: 280,
-    image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400',
-    season: 'summer',
-    city: null,
-  },
-  {
-    id: 6,
-    title: '교토 기온 마츠리',
-    location: '교토부 교토시',
-    date: '2026년 7월',
-    rating: 4.9,
-    reviewCount: 445,
-    bookmarkCount: 520,
-    image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400',
-    season: 'summer',
-    city: 'kyoto',
-  },
-  {
-    id: 7,
-    title: '나고야 봄 축제',
-    location: '나고야성',
-    date: '2026년 3월 20일~4월 6일',
-    rating: 4.2,
-    reviewCount: 126,
-    bookmarkCount: 453,
-    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400',
-    season: 'spring',
-    city: 'nagoya',
-  },
-  {
-    id: 8,
-    title: '히타치 해변 공원 코스모스',
-    location: '이바라키현 히타치시',
-    date: '2026년 9월~10월',
-    rating: 4.6,
-    reviewCount: 198,
-    bookmarkCount: 167,
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-    season: 'autumn',
-    city: null,
-  },
-  {
-    id: 9,
-    title: '도쿄 라멘 쇼',
-    location: '도쿄 국제전시장',
-    date: '2026년 11월',
-    rating: 4.5,
-    reviewCount: 234,
-    bookmarkCount: 189,
-    image: 'https://images.unsplash.com/photo-1569718212165-3a2854114a6e?w=400',
-    season: 'food',
-    city: 'tokyo',
-  },
-  {
-    id: 10,
-    title: '야마가타 체리 축제',
-    location: '야마가타현',
-    date: '2026년 6월',
-    rating: 4.7,
-    reviewCount: 156,
-    bookmarkCount: 98,
-    image: 'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=400',
-    season: 'local',
-    city: null,
-  },
-  {
-    id: 11,
-    title: '오사카 덴진 마츠리',
-    location: '오사카부 오사카시',
-    date: '2026년 7월',
-    rating: 4.7,
-    reviewCount: 289,
-    bookmarkCount: 312,
-    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400',
-    season: 'summer',
-    city: 'osaka',
-  },
-  {
-    id: 12,
-    title: '후쿠오카 하카타 기온',
-    location: '후쿠오카현 후쿠오카시',
-    date: '2026년 7월',
-    rating: 4.8,
-    reviewCount: 421,
-    bookmarkCount: 398,
-    image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400',
-    season: 'summer',
-    city: 'fukuoka',
-  },
-]
-
 function BackIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -194,17 +47,50 @@ function FestivalList() {
     return 'summer'
   })
 
+  // 축제 데이터 상태
+  const [festivals, setFestivals] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  // API에서 축제 데이터 가져오기
+  useEffect(() => {
+    const fetchFestivals = async () => {
+      setLoading(true)
+      setError(null)
+      
+      try {
+        // API 쿼리 문자열 생성
+        const params = new URLSearchParams()
+        if (cityId) {
+          params.append('city', cityId)
+        } else if (activeTab) {
+          params.append('season', activeTab)
+        }
+
+        const response = await fetch(`http://localhost:5000/api/festivals?${params.toString()}`)
+        
+        if (!response.ok) {
+          throw new Error('축제 데이터를 불러올 수 없습니다')
+        }
+
+        const data = await response.json()
+        setFestivals(data)
+      } catch (err) {
+        setError(err.message)
+        setFestivals([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFestivals()
+  }, [activeTab, cityId])
+
   useEffect(() => {
     if (category && category !== 'categories' && category !== 'city' && SEASON_TABS.some((t) => t.id === category)) {
       setActiveTab(category)
     }
   }, [category])
-
-  const filteredList = FESTIVAL_LIST.filter((f) => {
-    if (cityId) return f.city === cityId
-    if (f.season !== activeTab) return false
-    return true
-  })
 
   return (
     <div className={`festival-list-page ${cityId ? 'festival-list-page--with-cities' : ''}`}>
@@ -248,9 +134,12 @@ function FestivalList() {
       </div>
 
       <main className="festival-list-main">
+        {loading && <p className="festival-list-loading">축제를 불러오는 중...</p>}
+        {error && <p className="festival-list-error">{error}</p>}
+        
         <ul className="festival-list">
-          {filteredList.length > 0
-            ? filteredList.map((item) => (
+          {festivals.length > 0
+            ? festivals.map((item) => (
                 <li key={item.id} className="festival-list-card">
                   <div className="festival-list-card-image">
                     <img src={item.image} alt={item.title} />
@@ -278,34 +167,8 @@ function FestivalList() {
                   </div>
                 </li>
               ))
-            : filteredList.map((item) => (
-                <li key={item.id} className="festival-list-card">
-                  <div className="festival-list-card-image">
-                    <img src={item.image} alt={item.title} />
-                  </div>
-                  <div className="festival-list-card-body">
-                    <h3 className="festival-list-card-title">{item.title}</h3>
-                    <p className="festival-list-card-row">
-                      <LocationIcon />
-                      <span>{item.location}</span>
-                    </p>
-                    <p className="festival-list-card-row">
-                      <CalendarIcon />
-                      <span>{item.date}</span>
-                    </p>
-                    <div className="festival-list-card-meta">
-                      <span className="festival-list-card-rating">
-                        <img src="/assets/star_icon.svg" alt="" aria-hidden />
-                        {item.rating}({item.reviewCount})
-                      </span>
-                      <span className="festival-list-card-bookmark">
-                        <img src="/assets/list_icon.svg" alt="" aria-hidden />
-                        {item.bookmarkCount}
-                      </span>
-                    </div>
-                  </div>
-                </li>
-              ))}
+            : !loading && <p className="festival-list-empty">축제가 없습니다</p>
+          }
         </ul>
       </main>
 

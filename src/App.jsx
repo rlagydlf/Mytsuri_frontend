@@ -17,12 +17,29 @@ function App() {
     const controller = new AbortController()
 
     const checkAuth = async () => {
+      // 로그인이 필요 없는 페이지는 인증 체크 스킵
+      const publicPaths = ['/login', '/festivals', '/list', '/profile', '/notifications']
+      const isPublicPage = publicPaths.some(path => location.pathname.startsWith(path))
+      
+      if (isPublicPage) {
+        setAuthStatus('guest')
+        return
+      }
+
+      setAuthStatus('loading')
+
       try {
+        const accessToken = sessionStorage.getItem('access_token')
         const res = await fetch('http://localhost:5000/api/users/me', {
           method: 'GET',
           credentials: 'include',
+          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
           signal: controller.signal
         })
+
+        if (!res.ok && accessToken) {
+          sessionStorage.removeItem('access_token')
+        }
 
         if (!isMounted) return
         setAuthStatus(res.ok ? 'authed' : 'guest')
