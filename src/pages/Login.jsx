@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Login.css'
 
@@ -7,66 +7,103 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
+  useEffect(() => {
+    const initializeGoogle = () => {
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
+      if (!clientId) {
+        console.error('VITE_GOOGLE_CLIENT_ID is not set')
+        return
+      }
+
+      if (!window.google?.accounts?.id) {
+        console.error('Google 라이브러리 로드 중...')
+        setTimeout(initializeGoogle, 100)
+        return
+      }
+
+      // Google 초기화
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleCredentialResponse
+      })
+    }
+
+    initializeGoogle()
+  }, [])
+
+  const handleCredentialResponse = async (response) => {
+    const idToken = response?.credential
+
+    if (!idToken) {
+      setErrorMessage('Google 토큰을 받지 못했습니다.')
+      setIsLoading(false)
+      return
+    }
+
+    console.log('Google 토큰 받음:', idToken.substring(0, 20) + '...')
+
+    try {
+      const result = await fetch('http://localhost:5000/api/auth/google', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ idToken })
+      })
+
+      const data = await result.json().catch(() => ({}))
+
+      console.log('서버 응답:', data)
+
+      if (!result.ok) {
+        setErrorMessage(data?.message || '로그인에 실패했습니다.')
+        setIsLoading(false)
+        return
+      }
+
+      // 쿠키에 JWT가 자동으로 저장되므로 별도 저장 불필요
+      console.log('로그인 성공:', data)
+      
+      // 로그인 성공 - 홈으로 이동 (히스토리에 로그인 페이지 남기지 않음)
+      console.log('홈페이지로 이동 중...')
+      window.history.replaceState(null, '', '/')
+      window.location.href = '/'
+    } catch (error) {
+      console.error('로그인 오류:', error)
+      setErrorMessage('서버와 통신할 수 없습니다.')
+      setIsLoading(false)
+    }
+  }
+
   const handleGoogleLogin = () => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
-
+    console.log('구글 로그인 버튼 클릭')
     setErrorMessage('')
-
-    if (!clientId) {
-      setErrorMessage('VITE_GOOGLE_CLIENT_ID가 설정되지 않았어요.')
-      return
-    }
-
-    if (!window.google?.accounts?.id) {
-      setErrorMessage('구글 로그인 스크립트를 불러오지 못했어요.')
-      return
-    }
-
     setIsLoading(true)
 
-    window.google.accounts.id.initialize({
-      client_id: clientId,
-      callback: async (response) => {
-        const idToken = response?.credential
+    if (!window.google?.accounts?.id) {
+      setErrorMessage('Google 로그인 스크립트를 불러오지 못했습니다.')
+      setIsLoading(false)
+      return
+    }
 
-        if (!idToken) {
-          setIsLoading(false)
-          setErrorMessage('ID 토큰을 받지 못했어요.')
-          return
-        }
-
-        try {
-          const result = await fetch('http://localhost:5000/api/auth/google', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify({ idToken })
-          })
-
-          const data = await result.json().catch(() => null)
-
-          if (!result.ok) {
-            setErrorMessage(data?.message || '로그인에 실패했어요.')
-            return
-          }
-
-          navigate('/', { replace: true })
-        } catch (error) {
-          setErrorMessage('서버와 통신할 수 없어요.')
-        } finally {
+    try {
+      // 프롬프트 표시
+      window.google.accounts.id.prompt((notification) => {
+        console.log('프롬프트 알림:', notification)
+        
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          console.error('프롬프트 표시 실패:', notification)
+          setErrorMessage('구글 로그인 팝업을 열 수 없습니다.')
           setIsLoading(false)
         }
-      }
-    })
-
-    window.google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        setIsLoading(false)
-        setErrorMessage('구글 로그인 팝업을 열 수 없어요.')
-      }
-    })
+      })
+    } catch (error) {
+      console.error('프롬프트 오류:', error)
+      setErrorMessage('로그인 팝업을 열 수 없습니다.')
+      setIsLoading(false)
+    }
   }
 
   return (
