@@ -6,12 +6,6 @@ import DateSelectSheet from '../components/DateSelectSheet/DateSelectSheet'
 import TypeSelectSheet from '../components/TypeSelectSheet/TypeSelectSheet'
 import './Search.css'
 
-const FALLBACK_FILTERS = [
-  { id: 'all', label: '전체', active: true },
-  { id: 'region', label: '지역', icon: 'location' },
-  { id: 'date', label: '날짜', icon: 'calendar' },
-  { id: 'type', label: '종류', icon: null },
-]
 
 function SearchIcon() {
   return (
@@ -50,7 +44,7 @@ function BackIcon() {
 function Search() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
-  const [searchFilters, setSearchFilters] = useState(FALLBACK_FILTERS)
+  const [searchFilters, setSearchFilters] = useState([])
   const [activeFilter, setActiveFilter] = useState('all')
   const [selectedPrefecture, setSelectedPrefecture] = useState(null)
   const [selectedDateRange, setSelectedDateRange] = useState(null)
