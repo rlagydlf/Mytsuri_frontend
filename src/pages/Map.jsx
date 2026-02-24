@@ -357,7 +357,7 @@ function MapPage() {
                     closeButton={false}
                     closeOnClick={false}
                   >
-                    <div className="map-callout-content">
+                    <div className="map-callout-content" onClick={() => navigate(`/festival/${m.id}`, { state: { from: 'map' } })} role="button" tabIndex={0} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && navigate(`/festival/${m.id}`, { state: { from: 'map' } })} style={{ cursor: 'pointer' }}>
                       <div className="map-callout-title">{m.name}</div>
                       <div className="map-callout-subtitle">{formatMonth(m.startDate)} · {m.location}</div>
                     </div>

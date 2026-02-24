@@ -1,0 +1,513 @@
+.festival-detail-page {
+  min-height: 100vh;
+  background: #000;
+  color: #F5F5F5;
+  padding-bottom: 24px;
+  --top-height: calc(68px + env(safe-area-inset-top, 0px) + 56px);
+}
+
+.festival-detail-top-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: #000;
+}
+
+.festival-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  min-height: 48px;
+}
+
+.festival-detail-header-btn {
+  padding: 8px;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.festival-detail-header-btn:hover {
+  opacity: 0.8;
+}
+
+.festival-detail-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.festival-detail-main {
+  padding-top: calc(140px + env(safe-area-inset-top, 0px));
+}
+
+.festival-detail-hero {
+  padding: 0 20px;
+  margin-bottom: 20px;
+}
+
+.festival-detail-hero-cards {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 0;
+}
+
+.festival-detail-hero-cards::-webkit-scrollbar {
+  display: none;
+}
+
+.festival-detail-hero-card {
+  flex: 0 0 320px;
+  aspect-ratio: 4 / 3;
+  border-radius: 20px;
+  border: 1px solid var(--Gray_warm-50, #FEFFFE);
+}
+
+.festival-detail-info {
+  padding: 0 20px;
+  margin-top: 20px;
+  margin-bottom: 24px; 
+}
+  
+.festival-detail-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+
+.festival-detail-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 140%;
+  letter-spacing: -0.16px;
+  color: #FFF;
+  flex: 1;
+  min-width: 0;
+}
+
+.festival-detail-subtitle {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 140%;
+  letter-spacing: -0.12px;
+  color: #9E9E9E;
+}
+
+.festival-detail-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.festival-detail-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: #F5F5F5;
+}
+
+.festival-detail-review-count {
+  color: #9E9E9E;
+}
+
+.festival-detail-rating img {
+  width: 18px;
+  height: 18px;
+}
+
+.festival-detail-homepage-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  padding: 11px 16px 11px 18px;
+  background-color: #000;
+  color: #eee;
+
+  border: 1px solid #eee;
+  border-radius: 185px;
+
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 140%;
+  letter-spacing: -0.12px;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+}
+
+.festival-detail-tabs {
+  display: flex;
+  gap: 75px;  
+  padding: 0 20px 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.festival-detail-tab {
+  flex: 1;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  color: #9E9E9E;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 140%;
+  letter-spacing: -0.16px;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+}
+
+.festival-detail-tab.active {
+  color: #F5F5F5;
+}
+
+.festival-detail-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #F5F5F5;
+}
+
+.festival-detail-overview,
+.festival-detail-tab-content {
+  padding: 20px;
+}
+
+.festival-detail-details {
+  margin-bottom: 24px;
+}
+
+.festival-detail-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  color: #FFF;
+}
+
+.festival-detail-detail-row svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: rgba(245, 245, 245, 0.6);
+}
+
+.festival-detail-section {
+  margin-bottom: 28px;
+}
+
+.festival-detail-overview .festival-detail-section:first-of-type {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 2px solid #9E9E9E;
+}
+
+.festival-detail-section-title {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #FFF;
+}
+
+.festival-detail-description {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #E0E0E0;
+}
+
+.festival-detail-hashtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.festival-detail-hashtag {
+  padding: 8px 13px;
+  border: 1px solid #9E9E9E;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #9E9E9E;
+  line-height: 140%;
+  letter-spacing: -0.12px;
+}
+
+.festival-detail-activities {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 0;
+}
+
+.festival-detail-activities::-webkit-scrollbar {
+  display: none;
+}
+
+.festival-detail-activity-card {
+  flex: 0 0 180px;
+  position: relative;
+  border-radius: 20px;
+  border: 1px solid var(--Gray_warm-200, #EEE);
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+}
+
+.festival-detail-activity-image {
+  width: 100%;
+  height: 100%;
+}
+
+.festival-detail-activity-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.festival-detail-activity-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 16px 16px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+}
+
+.festival-detail-activity-title {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 140%;
+  letter-spacing: -0.18px;
+}
+
+.festival-detail-activity-subtitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 140%;
+  letter-spacing: -0.14px;
+  color: #FFF;
+} 
+
+/* 리뷰 탭 */
+.festival-detail-reviews {
+  padding-top: 0;
+}
+
+.review-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+}
+
+.review-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #EEE;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 140%;
+  letter-spacing: -0.14px;
+  cursor: pointer;
+}
+
+.review-write-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 12px 5px 16px;
+  border: 1px solid #BD382C;
+  border-radius: 185px;
+  background: none;
+  color: #FC4A3A;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 140%;
+  letter-spacing: -0.12px;
+  cursor: pointer;
+}
+
+.review-write-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.review-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.review-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.review-card-name {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 140%;
+  letter-spacing: -0.12px;
+  color: #E0E0E0;
+}
+
+.review-card-date {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 140%;
+  letter-spacing: -0.12px;
+  color: #9E9E9E;
+  text-align: right;
+}
+
+.review-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.review-card-stars {
+  display: inline-flex;
+  align-items: center;
+  padding-right: 2px;
+  gap: 4px;
+}
+
+.review-card-stars img {
+  margin-right: -2px;
+}
+
+.review-card-score {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 140%;
+  letter-spacing: -0.14px;
+  color: #E0E0E0;
+}
+
+.review-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.review-card-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 8px 12px;
+  border: 1px solid #424242;
+  border-radius: 30px;
+  background: #070707;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 140%;
+  letter-spacing: -0.14px;
+  color: #9E9E9E;
+  white-space: nowrap;
+}
+
+.review-card-body {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 140%;
+  letter-spacing: -0.14px;
+  color: #FEFFFE;
+  white-space: pre-wrap;
+}
+
+.review-item:not(:last-child)::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: #9E9E9E;
+  margin-top: 34px;
+  margin-bottom: 34px;
+}
+
+.festival-detail-empty {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(245, 245, 245, 0.5);
+  text-align: center;
+  padding: 40px 0;
+}
+
+.festival-detail-bottom-pad {
+  height: 24px;
+}
+
+/* 사진 탭 — 3열 그리드, 외곽 라운드 14px */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.photo-grid-item {
+  aspect-ratio: 1 / 1;
+  background: #D9D9D9;
+  overflow: hidden;
+}
+
+.photo-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 가는 길 탭 — Mapbox 지도 + 길찾기 */
+.directions-map-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.directions-map-container {
+  width: 100%;
+  height: 400px;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+}

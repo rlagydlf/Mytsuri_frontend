@@ -313,7 +313,27 @@ function Search() {
       <div className={`search-top-fixed ${showFilters ? 'search-top-fixed--with-filters' : ''}`}>
         <StatusBar />
         <div className="search-bar-row">
-          <button type="button" className="search-back-btn" onClick={() => navigate(-1)} aria-label="이전으로">
+          <button
+            type="button"
+            className="search-back-btn"
+            onClick={() => {
+              if (showFilters) {
+                setShowFilters(false)
+                setQuery('')
+                setSearchResults([])
+                setSelectedPrefecture(null)
+                setSelectedDateRange(null)
+                setSelectedType(null)
+                setActiveFilter('all')
+                setRegionSheetOpen(false)
+                setDateSheetOpen(false)
+                setTypeSheetOpen(false)
+              } else {
+                navigate(-1)
+              }
+            }}
+            aria-label="이전으로"
+          >
             <BackIcon />
           </button>
           <div className="search-bar-wrap">
@@ -415,7 +435,7 @@ function Search() {
             <h2 className="search-section-title">검색 결과 ({searchResults.length})</h2>
             <ul className="search-festival-list">
               {searchResults.map((card) => (
-                <li key={card.id}>
+                <li key={card.id} onClick={() => navigate(`/festival/${card.id}`, { state: { from: 'search' } })} role="button" tabIndex={0} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && navigate(`/festival/${card.id}`, { state: { from: 'search' } })}>
                   <article className="search-festival-card">
                     <div className="search-festival-card-image">
                       <img src={card.image} alt="" />
@@ -473,7 +493,7 @@ function Search() {
             <h2 className="search-section-title">찾아가는 사람이 많은 축제</h2>
             <ul className="search-festival-list">
               {popularFestivals.map((card) => (
-                <li key={card.id}>
+                <li key={card.id} onClick={() => navigate(`/festival/${card.id}`, { state: { from: 'search' } })} role="button" tabIndex={0} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && navigate(`/festival/${card.id}`, { state: { from: 'search' } })}>
                   <article className="search-festival-card">
                     <div className="search-festival-card-image">
                       <img src={card.image} alt="" />

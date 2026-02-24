@@ -1,0 +1,156 @@
+.add-to-list-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(33, 33, 33, 0.80);
+  z-index: 1100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  animation: add-to-list-backdrop-fade 0.25s ease-out;
+}
+
+@keyframes add-to-list-backdrop-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.add-to-list-sheet {
+  width: 100%;
+  max-width: 480px;
+  max-height: 60vh;
+  background: #070707;
+  border-radius: 20px 20px 0 0;
+  padding: 12px 20px 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  animation: add-to-list-sheet-slide 0.3s ease-out;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes add-to-list-sheet-slide {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.add-to-list-handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+  flex-shrink: 0;
+}
+
+.add-to-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.add-to-list-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #F5F5F5;
+}
+
+.add-to-list-new-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  border: 1px solid #FC4A3A;
+  border-radius: 999px;
+  background: transparent;
+  color: #FC4A3A;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.add-to-list-new-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.add-to-list-new-btn:hover {
+  background: rgba(252, 74, 58, 0.1);
+}
+
+.add-to-list-added-msg {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  background: rgba(252, 74, 58, 0.12);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #FC4A3A;
+  flex-shrink: 0;
+}
+
+.add-to-list-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+.add-to-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 0;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.add-to-list-item:last-child {
+  border-bottom: none;
+}
+
+.add-to-list-item-thumb {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+
+.add-to-list-item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.add-to-list-item-name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #F5F5F5;
+}
+
+.add-to-list-item-meta {
+  font-size: 0.8125rem;
+  color: #9E9E9E;
+}
+
+.add-to-list-item-plus {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #F5F5F5;
+}

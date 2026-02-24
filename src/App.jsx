@@ -8,6 +8,9 @@ import Profile from './pages/Profile'
 import FestivalList from './pages/FestivalList'
 import Notification from './pages/Notification'
 import Search from './pages/Search'
+import FestivalDetail from './pages/FestivalDetail'
+import ListDetail from './pages/ListDetail'
+import ReviewWrite from './pages/ReviewWrite'
 
 function App() {
   const location = useLocation()
@@ -87,7 +90,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <Login />} />
+      {/* <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/" element={isLoggedIn ? <Home /> : <Navigate to="/login" replace />} />
       <Route path="/map" element={isLoggedIn ? <MapPage /> : <Navigate to="/login" replace />} />
       <Route path="/list" element={isLoggedIn ? <List /> : <Navigate to="/login" replace />} />
@@ -97,7 +100,21 @@ function App() {
       <Route path="/festivals" element={isLoggedIn ? <FestivalList /> : <Navigate to="/login" replace />} />
       <Route path="/festivals/city/:cityId" element={isLoggedIn ? <FestivalList /> : <Navigate to="/login" replace />} />
       <Route path="/festivals/:category" element={isLoggedIn ? <FestivalList /> : <Navigate to="/login" replace />} />
-      <Route path="*" element={<Navigate to={isLoggedIn ? '/' : '/login'} replace />} />
+      <Route path="*" element={<Navigate to={isLoggedIn ? '/' : '/login'} replace />} /> */}
+      <Route path="/" element={<Home />} />
+      <Route path="/map" element={<MapPage />} />
+      <Route path="/list" element={<List />} />
+      <Route path="/list/new" element={<ListDetail />} />
+      <Route path="/list/:id" element={<ListDetail />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/notifications" element={<Notification />} />
+      <Route path="/search" element={<Search />} />
+      <Route path="/festival/:id" element={<FestivalDetail />} />
+      <Route path="/festival/:id/review" element={<ReviewWrite />} />
+      <Route path="/festivals" element={<FestivalList />} />
+      <Route path="/festivals/city/:cityId" element={<FestivalList />} />
+      <Route path="/festivals/:category" element={<FestivalList />} />
+
     </Routes>
   )
 }

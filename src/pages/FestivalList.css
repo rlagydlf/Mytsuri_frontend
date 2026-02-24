@@ -10,6 +10,10 @@
   --top-height: calc(68px + env(safe-area-inset-top, 0px) + 52px + 72px);
 }
 
+.festival-list-page.festival-list-page--section {
+  --top-height: calc(68px + env(safe-area-inset-top, 0px) + 44px);
+}
+
 .festival-list-top-fixed {
   position: fixed;
   top: 0;
@@ -35,6 +39,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.festival-list-header-title {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.32px;
+  color: #fff;
+  margin: 0;
+  margin-left: 8px;
 }
 
 .festival-list-cities {
@@ -161,6 +176,7 @@
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 20px;
   transition: border-color 0.2s;
+  cursor: pointer;
 }
 
 .festival-list-card:hover {

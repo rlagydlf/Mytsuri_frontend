@@ -209,6 +209,7 @@
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.04);
   transition: border-color 0.2s;
+  cursor: pointer;
 }
 
 .search-festival-card:hover {
