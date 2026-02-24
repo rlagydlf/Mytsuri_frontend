@@ -4,22 +4,7 @@ import StatusBar from '../components/StatusBar'
 import NavigationBar from '../components/NavigationBar'
 import './FestivalList.css'
 
-const CITY_TABS = [
-  { id: 'kyoto', label: '교토' },
-  { id: 'osaka', label: '오사카' },
-  { id: 'nagoya', label: '나고야' },
-  { id: 'tokyo', label: '도쿄' },
-  { id: 'fukuoka', label: '후쿠오카' },
-]
 
-const SEASON_TABS = [
-  { id: 'summer', label: '여름' },
-  { id: 'winter', label: '겨울' },
-  { id: 'spring', label: '봄' },
-  { id: 'autumn', label: '가을' },
-  { id: 'food', label: '먹거리' },
-  { id: 'local', label: '특산물' },
-]
 
 function BackIcon() {
   return (
@@ -49,15 +34,14 @@ function FestivalList() {
   const { category, cityId } = useParams()
   const sectionType = location.state?.section
   const sectionTitle = sectionType ? SECTION_TITLES[sectionType] : null
-  const [activeTab, setActiveTab] = useState(() => {
-    if (category && category !== 'categories' && category !== 'city' && SEASON_TABS.some((t) => t.id === category)) {
-      return category
-    }
-    return 'summer'
-  })
+  const [activeTab, setActiveTab] = useState('')
+  const categoryOrder = ['summer', 'winter', 'spring', 'autumn', 'food', 'local']
+  const categoryOrderIndex = new Map(categoryOrder.map((id, index) => [id, index]))
 
   // 축제 데이터 상태
   const [festivals, setFestivals] = useState([])
+  const [cities, setCities] = useState([])
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -98,10 +82,78 @@ function FestivalList() {
   }, [activeTab, cityId, sectionType])
 
   useEffect(() => {
-    if (category && category !== 'categories' && category !== 'city' && SEASON_TABS.some((t) => t.id === category)) {
-      setActiveTab(category)
+    let isMounted = true
+    const controller = new AbortController()
+
+    const fetchCities = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/home/cities', {
+          signal: controller.signal
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        if (isMounted && Array.isArray(data)) setCities(data)
+      } catch (err) {
+        if (err.name !== 'AbortError') return
+      }
     }
-  }, [category])
+
+    fetchCities()
+    return () => {
+      isMounted = false
+      controller.abort()
+    }
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/home/categories', {
+          signal: controller.signal
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        if (isMounted && Array.isArray(data)) setCategories(data)
+      } catch (err) {
+        if (err.name !== 'AbortError') return
+      }
+    }
+
+    fetchCategories()
+    return () => {
+      isMounted = false
+      controller.abort()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!categories.length) return
+
+    if (category && category !== 'categories' && category !== 'city' && categories.some((t) => t.id === category)) {
+      setActiveTab(category)
+      return
+    }
+
+    if (!cityId && !activeTab) {
+      const sortedCategories = [...categories].sort((a, b) => {
+        const aIndex = categoryOrderIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER
+        const bIndex = categoryOrderIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER
+        return aIndex - bIndex
+      })
+      if (sortedCategories.length) {
+        setActiveTab(sortedCategories[0].id)
+      }
+    }
+  }, [category, categories, cityId, activeTab, categoryOrderIndex])
+
+  const orderedCategories = [...categories].sort((a, b) => {
+    const aIndex = categoryOrderIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER
+    const bIndex = categoryOrderIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER
+    return aIndex - bIndex
+  })
 
   return (
     <div className={`festival-list-page ${cityId ? 'festival-list-page--with-cities' : ''} ${sectionType ? 'festival-list-page--section' : ''}`}>
@@ -116,7 +168,7 @@ function FestivalList() {
 
         {!sectionType && cityId && (
           <div className="festival-list-cities">
-            {CITY_TABS.map((city) => (
+            {cities.map((city) => (
               <button
                 key={city.id}
                 type="button"
@@ -131,14 +183,14 @@ function FestivalList() {
 
         {!sectionType && !cityId && (
         <div className="festival-list-tabs">
-          {SEASON_TABS.map((tab) => (
+          {orderedCategories.map((tab) => (
             <button
               key={tab.id}
               type="button"
               className={`festival-list-tab ${activeTab === tab.id ? 'festival-list-tab--active' : ''}`}
               onClick={() => setActiveTab(tab.id)}
             >
-              {tab.label}
+              {tab.label.replace(/\s*축제$/u, '')}
             </button>
           ))}
         </div>

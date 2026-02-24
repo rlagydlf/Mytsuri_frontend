@@ -66,32 +66,35 @@ function Home() {
     const fetchData = async () => {
       try {
         setLoadError('')
-        const [bannersRes, categoriesRes, citiesRes, festivalsRes] = await Promise.all([
-          fetch('http://localhost:5000/api/home/banners', { signal: controller.signal }),
+        const [recommendationsRes, categoriesRes, citiesRes, festivalsRes] = await Promise.all([
+          fetch('http://localhost:5000/api/recommendations', { signal: controller.signal, credentials: 'include' }),
           fetch('http://localhost:5000/api/home/categories', { signal: controller.signal }),
           fetch('http://localhost:5000/api/home/cities', { signal: controller.signal }),
           fetch('http://localhost:5000/api/home/festivals', { signal: controller.signal })
         ])
 
-        if (!bannersRes.ok || !categoriesRes.ok || !citiesRes.ok || !festivalsRes.ok) {
+        if (!recommendationsRes.ok || !categoriesRes.ok || !citiesRes.ok || !festivalsRes.ok) {
           throw new Error('홈 데이터를 불러오지 못했어요.')
         }
 
-        const [bannersData, categoriesData, citiesData, festivalsData] = await Promise.all([
-          bannersRes.json(),
+        const [recommendationsData, categoriesData, citiesData, festivalsData] = await Promise.all([
+          recommendationsRes.json(),
           categoriesRes.json(),
           citiesRes.json(),
           festivalsRes.json()
         ])
 
         if (isMounted) {
-          setBanners(Array.isArray(bannersData) ? bannersData : EMPTY_BANNERS)
+          setBanners(Array.isArray(recommendationsData) ? recommendationsData : EMPTY_BANNERS)
           const sortedCategories = Array.isArray(categoriesData)
             ? [...categoriesData].sort((a, b) => getCategoryOrder(a.label) - getCategoryOrder(b.label))
             : EMPTY_CATEGORIES
           setCategories(sortedCategories)
           setCities(Array.isArray(citiesData) ? citiesData : EMPTY_CITIES)
-          setFestivals(Array.isArray(festivalsData) ? festivalsData : EMPTY_FESTIVALS)
+          const sortedFestivals = Array.isArray(festivalsData)
+            ? [...festivalsData].sort((a, b) => (b.bookmarkCount ?? 0) - (a.bookmarkCount ?? 0))
+            : EMPTY_FESTIVALS
+          setFestivals(sortedFestivals)
         }
       } catch (error) {
         if (error.name === 'AbortError') {
@@ -120,6 +123,21 @@ function Home() {
     }, 4000)
     return () => clearInterval(timer)
   }, [banners.length])
+
+  // 섹션별 정렬된 축제 배열 생성
+  const festivalsByBookmarks = [...festivals].sort(
+    (a, b) => (b.bookmarkCount ?? 0) - (a.bookmarkCount ?? 0)
+  )
+  const festivalsByReviews = [...festivals].sort(
+    (a, b) => (b.reviewCount ?? 0) - (a.reviewCount ?? 0)
+  )
+  const festivalsByDate = [...festivals].sort(
+    (a, b) => {
+      const dateA = new Date(a.start_date || a.startDate || '9999-12-31')
+      const dateB = new Date(b.start_date || b.startDate || '9999-12-31')
+      return dateA - dateB
+    }
+  )
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX
@@ -171,7 +189,7 @@ function Home() {
                 <img src={slide.image} alt={slide.title} />
                 <div className="banner-overlay">
                   <h2 className="banner-title">{slide.title}</h2>
-                  <p className="banner-subtitle">{slide.subtitle}</p>
+                  <p className="banner-subtitle">{slide.subtitle || slide.reason || slide.location}</p>
                 </div>
               </div>
             ))}
@@ -203,12 +221,12 @@ function Home() {
           <div className="section-header">
             <div className="section-header-inner">
               <h3 className="section-title">최근 떠오르는 축제들</h3>
-              <p className="section-subtitle">조회수가 가장 높은 여름 축제들을 모아봤어요!</p>
+              <p className="section-subtitle">사람들이 많이 찾는 축제들로 모아왔어요!</p>
             </div>
             <button type="button" className="section-more" aria-label="더보기" onClick={() => navigate('/festivals', { state: { section: 'trending' } })}><ArrowIcon /></button>
           </div>
           <div className="festival-scroll">
-            {(festivals.length > 0 ? festivals : [DUMMY_FESTIVAL]).map((card) => (
+            {festivalsByBookmarks.map((card) => (
               <FestivalCard key={card.id} data={card} onClick={() => navigate(`/festival/${card.id}`, { state: { from: 'home' } })} />
             ))}
           </div>
@@ -223,7 +241,7 @@ function Home() {
             <button type="button" className="section-more" aria-label="더보기" onClick={() => navigate('/festivals', { state: { section: 'reviews' } })}><ArrowIcon /></button>
           </div>
           <div className="festival-scroll">
-            {(festivals.length > 0 ? festivals : [DUMMY_FESTIVAL]).map((card) => (
+            {festivalsByReviews.map((card) => (
               <FestivalCard key={`r-${card.id}`} data={card} onClick={() => navigate(`/festival/${card.id}`, { state: { from: 'home' } })} />
             ))}
           </div>
@@ -254,7 +272,7 @@ function Home() {
             <button type="button" className="section-more" aria-label="더보기" onClick={() => navigate('/festivals', { state: { section: 'spring' } })}><ArrowIcon /></button>
           </div>
           <div className="festival-scroll">
-            {(festivals.length > 0 ? festivals : [DUMMY_FESTIVAL]).map((card) => (
+            {festivalsByDate.map((card) => (
               <FestivalCard key={`s-${card.id}`} data={card} onClick={() => navigate(`/festival/${card.id}`, { state: { from: 'home' } })} />
             ))}
           </div>
@@ -275,6 +293,28 @@ function Home() {
 }
 
 function FestivalCard({ data, onClick }) {
+  const formatDate = (startDate, endDate) => {
+    if (!startDate) return ''
+    try {
+      const start = new Date(startDate)
+      const end = new Date(endDate || startDate)
+      const startMonth = start.getMonth() + 1
+      const startDay = start.getDate()
+      const endMonth = end.getMonth() + 1
+      const endDay = end.getDate()
+      
+      if (startMonth === endMonth) {
+        return `${startMonth}월 ${startDay}일 ~ ${endDay}일`
+      } else {
+        return `${startMonth}월 ${startDay}일 ~ ${endMonth}월 ${endDay}일`
+      }
+    } catch {
+      return ''
+    }
+  }
+
+  const displayDate = formatDate(data.start_date || data.startDate, data.end_date || data.endDate)
+
   return (
     <article className="festival-card" role="button" tabIndex={0} onClick={onClick} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick?.()}>
       <div className="festival-card-image">
@@ -283,7 +323,7 @@ function FestivalCard({ data, onClick }) {
       <div className="festival-card-body">
         <h4 className="festival-card-title">{data.title}</h4>
         <p className="festival-card-location"><LocationIcon /><span>{data.location}</span></p>
-        <p className="festival-card-date"><CalendarIcon /><span>{data.date}</span></p>
+        <p className="festival-card-date"><CalendarIcon /><span>{displayDate}</span></p>
         <div className="festival-card-meta">
           <span className="festival-card-rating">
             <img src="/assets/star_icon.svg" alt="" aria-hidden />
