@@ -1,0 +1,127 @@
+.ob-page {
+  background: #070707;
+  min-height: 100vh;
+  color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+}
+
+.ob-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0 20px 40px;
+  position: relative;
+}
+
+/* 필드 영역 */
+.ob-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding-top: 43px;
+}
+
+.ob-field {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ob-label {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.72px;
+  color: #fff;
+}
+
+.ob-input {
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid #9e9e9e;
+  border-radius: 10px;
+  background: #070707;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.32px;
+  color: #f5f5f5;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.ob-input::placeholder {
+  color: #9e9e9e;
+}
+
+.ob-input:focus,
+.ob-input--filled {
+  border-color: #fc4a3a;
+  color: #fc4a3a;
+}
+
+.ob-input--filled::placeholder {
+  color: #9e9e9e;
+}
+
+.ob-input--filled:not(:focus) {
+  color: #f5f5f5;
+  border-color: #eee;
+}
+
+/* 성별 버튼 */
+.ob-gender-row {
+  display: flex;
+  gap: 9px;
+}
+
+.ob-gender-btn {
+  flex: 1;
+  padding: 16px 18px;
+  border: 1px solid #9e9e9e;
+  border-radius: 10px;
+  background: #070707;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.32px;
+  color: #9e9e9e;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.ob-gender-btn--active {
+  border-color: #fc4a3a;
+  color: #fc4a3a;
+}
+
+/* 다음 버튼 */
+.ob-next-btn {
+  width: 100%;
+  padding: 16px 10px;
+  border: 1px solid #616161;
+  border-radius: 10px;
+  background: #070707;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.72px;
+  color: #757575;
+  cursor: not-allowed;
+  text-align: center;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.ob-next-btn--active {
+  border-color: #fc4a3a;
+  color: #fc4a3a;
+  cursor: pointer;
+}

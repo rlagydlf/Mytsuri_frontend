@@ -1,0 +1,423 @@
+.li-page {
+  min-height: 100vh;
+  background: #070707;
+  color: #F5F5F5;
+  padding-bottom: 40px;
+}
+
+.li-loading {
+  text-align: center;
+  color: #9E9E9E;
+  font-size: 14px;
+  margin-top: 120px;
+}
+
+/* 커버 */
+.li-cover {
+  position: relative;
+  width: 100%;
+  height: 253px;
+  overflow: visible;
+}
+
+.li-cover-img-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.li-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.li-cover-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180.6deg, rgb(0, 0, 0) 0.8%, rgba(96, 96, 96, 0) 47.7%, rgb(0, 0, 0) 92.8%);
+  pointer-events: none;
+}
+
+/* 헤더 */
+.li-cover-header {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 10;
+}
+
+.li-cover-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.li-cover-btn {
+  padding: 0;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 커버 하단: 이름 + 참여 버튼 */
+.li-cover-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 10;
+}
+
+.li-cover-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.li-cover-name {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.72px;
+  color: #F5F5F5;
+  margin: 0;
+}
+
+.li-cover-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.li-cover-meta-text {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.14px;
+  color: #E0E0E0;
+}
+
+.li-cover-meta-dot {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #D9D9D9;
+  flex-shrink: 0;
+}
+
+/* 참여 버튼 */
+.li-join-btn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 16px 8px 20px;
+  border: 1px solid #BD382C;
+  border-radius: 185px;
+  background: none;
+  color: #FC4A3A;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.32px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.li-join-btn:active {
+  background: rgba(252, 74, 58, 0.1);
+}
+
+/* 본문 */
+.li-body {
+  padding: 20px;
+}
+
+/* 축제 카드 */
+.li-festival-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.li-festival-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 28px;
+  border: 1px solid #EEE;
+  border-radius: 20px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.li-festival-card:active {
+  border-color: #FC4A3A;
+}
+
+.li-festival-card-image {
+  width: 91px;
+  height: 106px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #D9D9D9;
+}
+
+.li-festival-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.li-festival-card-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #D9D9D9;
+}
+
+.li-festival-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.li-festival-card-title {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.32px;
+  color: #fff;
+  margin: 0;
+}
+
+.li-festival-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.li-festival-card-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: -0.12px;
+  color: #9E9E9E;
+}
+
+.li-festival-card-row svg {
+  flex-shrink: 0;
+}
+
+.li-festival-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.li-festival-card-rating {
+  display: flex;
+  align-items: center;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  color: #F5F5F5;
+}
+
+.li-festival-card-rating img {
+  width: 20px;
+  height: 20px;
+}
+
+.li-festival-card-reviews {
+  color: #9E9E9E;
+}
+
+.li-festival-card-bookmark {
+  display: flex;
+  align-items: center;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  color: #E0E0E0;
+}
+
+.li-festival-card-bookmark img {
+  width: 20px;
+  height: 20px;
+}
+
+/* 드롭다운 */
+.li-dropdown {
+  position: fixed;
+  width: 240px;
+  background: #070707;
+  border-radius: 20px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+}
+
+.li-dropdown-item--single {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  padding: 5px 24px 5px 20px;
+  background: #070707;
+  border: 1px solid #616161;
+  border-radius: 20px;
+  color: #F5F5F5;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.32px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.li-dropdown-item--single:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* 모달 */
+.li-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(33, 33, 33, 0.8);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.li-modal {
+  width: 353px;
+  max-width: calc(100% - 40px);
+  background: #212121;
+  border: 1px solid #9E9E9E;
+  border-radius: 20px;
+  padding: 36px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.li-modal-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.li-modal-title {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.72px;
+  color: #F5F5F5;
+  margin: 0;
+  text-align: center;
+}
+
+.li-modal-desc {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.14px;
+  color: #E0E0E0;
+  margin: 0;
+  text-align: center;
+}
+
+.li-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.li-modal-cancel,
+.li-modal-confirm {
+  background: none;
+  border: none;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.28px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.li-modal-cancel {
+  color: #9E9E9E;
+}
+
+.li-modal-confirm {
+  color: #FC4A3A;
+}
+
+/* 토스트 */
+.li-toast {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  width: 343px;
+  max-width: calc(100% - 40px);
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #9E9E9E;
+  border-radius: 8px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.28px;
+  color: #FAFAFA;
+  z-index: 100000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.li-toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}

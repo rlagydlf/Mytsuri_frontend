@@ -1,0 +1,185 @@
+.list-page {
+  min-height: 100vh;
+  background: #070707;
+  color: #fff;
+  padding-bottom: 80px;
+}
+
+.list-top-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: #070707;
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+}
+
+.list-header-title {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.4;
+  letter-spacing: -0.96px;
+  color: #fff;
+  margin: 0;
+}
+
+.list-main {
+  padding-top: calc(54px + 68px);
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 24px;
+}
+
+.list-loading,
+.list-empty {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  color: #9E9E9E;
+  text-align: center;
+  margin-top: 60px;
+}
+
+.list-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.list-card {
+  border: 1px solid #EEE;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  padding-bottom: 20px;
+  transition: border-color 0.2s;
+}
+
+.list-card:active {
+  border-color: #FC4A3A;
+}
+
+.list-card-cover {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+}
+
+.list-card-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.list-card-cover-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(217, 217, 217, 0) 0%, #000 100%);
+  pointer-events: none;
+}
+
+.list-card-cover-text {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.list-card-name {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.72px;
+  color: #fff;
+  margin: 0;
+}
+
+.list-card-count {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: -0.12px;
+  color: #9E9E9E;
+  margin: 0;
+}
+
+.list-card-previews {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px;
+}
+
+.list-card-preview {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-card-preview-img-wrap {
+  width: 100%;
+  height: 77px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #D9D9D9;
+}
+
+.list-card-preview-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.list-card-preview-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #D9D9D9;
+}
+
+.list-card-preview-title {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: -0.12px;
+  color: #fff;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 플로팅 추가 버튼 */
+.list-fab {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #000;
+  border: 2px solid #FC4A3A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+}
+
+.list-fab:active {
+  transform: scale(0.95);
+}

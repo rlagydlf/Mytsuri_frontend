@@ -304,3 +304,371 @@
   color: #9E9E9E;
   text-align: center;
 }
+
+/* ===== 리스트 상세 보기 모드 ===== */
+.list-detail-page--view {
+  padding-bottom: 40px;
+}
+
+.ld-cover {
+  position: relative;
+  width: 100%;
+  height: 253px;
+  overflow: hidden;
+}
+
+.ld-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ld-cover-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180.6deg, rgb(0, 0, 0) 0.8%, rgba(96, 96, 96, 0) 47.7%, rgb(0, 0, 0) 92.8%);
+  pointer-events: none;
+}
+
+.ld-cover-header {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 10;
+}
+
+.ld-cover-header-right {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ld-cover-btn {
+  padding: 0;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ld-cover-info {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+}
+
+.ld-cover-name {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.72px;
+  color: #F5F5F5;
+  margin: 0;
+}
+
+.ld-cover-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ld-cover-meta-text {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.14px;
+  color: #E0E0E0;
+}
+
+.ld-cover-meta-dot {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #D9D9D9;
+  flex-shrink: 0;
+}
+
+/* 액션 버튼 (축제 추가, 친구 초대) */
+.ld-actions {
+  display: flex;
+  gap: 8px;
+  padding: 8px 20px;
+}
+
+.ld-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 7px 12px 7px 16px;
+  border: 1px solid #BD382C;
+  border-radius: 185px;
+  background: none;
+  color: #FC4A3A;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: -0.12px;
+  cursor: pointer;
+}
+
+.ld-action-btn:active {
+  background: rgba(252, 74, 58, 0.1);
+}
+
+/* 드롭다운 공통 */
+.ld-dropdown {
+  position: fixed;
+  width: 240px;
+  background: #070707;
+  border-radius: 20px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+}
+
+.ld-dropdown-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  padding: 5px 24px 5px 20px;
+  background: #070707;
+  border: none;
+  border-left: 1px solid #616161;
+  border-right: 1px solid #616161;
+  border-bottom: 1px solid #616161;
+  color: #F5F5F5;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.32px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ld-dropdown-item:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ld-dropdown-item--active {
+  color: #FC4A3A;
+}
+
+.ld-dropdown-item--first {
+  border-top: 1px solid #616161;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.ld-dropdown-item--last {
+  border: 1px solid #616161;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+/* 본문 -- merged into .ld-body below */
+
+.ld-sort-wrap {
+  position: relative;
+  margin-bottom: 0;
+}
+
+.ld-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ld-sort-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #EEE;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.14px;
+  cursor: pointer;
+}
+
+/* 축제 카드 리스트 */
+.ld-festival-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ld-festival-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 28px;
+  border: 1px solid #EEE;
+  border-radius: 20px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.ld-festival-card:active {
+  border-color: #FC4A3A;
+}
+
+.ld-festival-card-image {
+  width: 91px;
+  height: 106px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #D9D9D9;
+}
+
+.ld-festival-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ld-festival-card-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #D9D9D9;
+}
+
+.ld-festival-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ld-festival-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ld-festival-card-title {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.32px;
+  color: #fff;
+  margin: 0;
+}
+
+.ld-festival-card-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: -0.12px;
+  color: #9E9E9E;
+}
+
+.ld-festival-card-row svg {
+  flex-shrink: 0;
+}
+
+.ld-festival-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.ld-festival-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  color: #F5F5F5;
+}
+
+.ld-festival-card-rating img {
+  width: 20px;
+  height: 20px;
+}
+
+.ld-festival-card-reviews {
+  color: #9E9E9E;
+}
+
+.ld-festival-card-bookmark {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  color: #E0E0E0;
+}
+
+.ld-festival-card-bookmark img {
+  width: 20px;
+  height: 20px;
+}
+
+/* 토스트 팝업 */
+.ld-toast {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  width: 343px;
+  max-width: calc(100% - 40px);
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #9E9E9E;
+  border-radius: 8px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.28px;
+  color: #FAFAFA;
+  z-index: 100000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.ld-toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}

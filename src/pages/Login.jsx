@@ -66,10 +66,9 @@ function Login() {
       // 쿠키에 JWT가 자동으로 저장되므로 별도 저장 불필요
       console.log('로그인 성공:', data)
       
-      // 로그인 성공 - 홈으로 이동 (히스토리에 로그인 페이지 남기지 않음)
-      console.log('홈페이지로 이동 중...')
-      window.history.replaceState(null, '', '/')
-      window.location.href = '/'
+      // 로그인 성공 - 온보딩(선택) 페이지로 이동
+      window.history.replaceState(null, '', '/onboarding')
+      window.location.href = '/onboarding'
     } catch (error) {
       console.error('로그인 오류:', error)
       setErrorMessage('서버와 통신할 수 없습니다.')

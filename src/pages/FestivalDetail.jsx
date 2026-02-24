@@ -30,6 +30,9 @@ const DUMMY_DATA = {
     'https://images.unsplash.com/photo-1551641506-ee5bf4cb45f1?w=400',
     'https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=400',
     'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=400',
+    'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=400',
+    'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=400',
+    'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=400',
   ],
   rating: 4.8,
   reviewCount: 231,
@@ -201,17 +204,7 @@ function FestivalDetail() {
       <div className="festival-detail-top-fixed">
         <StatusBar />
         <header className="festival-detail-header">
-          <button
-            type="button"
-            className="festival-detail-header-btn"
-            onClick={() => {
-              const from = location.state?.from
-              if (from === 'search') navigate('/search')
-              else if (from === 'map') navigate('/map')
-              else navigate('/')
-            }}
-            aria-label="뒤로"
-          >
+          <button type="button" className="festival-detail-header-btn" onClick={() => navigate(-1)} aria-label="뒤로">
             <BackIcon />
           </button>
           <div className="festival-detail-header-actions">
@@ -311,7 +304,7 @@ function FestivalDetail() {
                 <span>최신순</span>
                 {reviewSortDesc ? <DownArrowIcon /> : <UpArrowIcon />}
               </button>
-              <button type="button" className="review-write-btn" onClick={() => navigate(`/festival/${id}/review`, { state: { from: location.state?.from } })}>
+              <button type="button" className="review-write-btn" onClick={() => navigate(`/festival/${id}/review`)}>
                 리뷰 작성
                 <PlusSmallIcon />
               </button>

@@ -194,6 +194,10 @@
   padding: 20px;
 }
 
+.festival-detail-tab-content--photos {
+  padding: 0 4px;
+}
+
 .festival-detail-details {
   margin-bottom: 24px;
 }
@@ -476,18 +480,18 @@
 }
 
 /* 사진 탭 — 3열 그리드, 외곽 라운드 14px */
+
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  border-radius: 14px;
-  overflow: hidden;
+  gap: 4px;
 }
 
 .photo-grid-item {
   aspect-ratio: 1 / 1;
   background: #D9D9D9;
   overflow: hidden;
+  border-radius: 4px;
 }
 
 .photo-grid-item img {
