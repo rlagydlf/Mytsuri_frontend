@@ -320,20 +320,21 @@ function FestivalDetail() {
 
       <main className="festival-detail-main">
         <section className="festival-detail-hero">
-          <div className="festival-detail-hero-cards">
-            {data.images.map((img, i) => (
-              <div key={i} className="festival-detail-hero-card" style={{ background: `url(${img}) lightgray 50% / cover no-repeat` }} />
-            ))}
-          </div>
+          <div
+            className="festival-detail-hero-card"
+            style={{ background: `url(${data.images?.[0]}) lightgray 50% / cover no-repeat` }}
+          />
         </section>
 
         <section className="festival-detail-info">
           <div className="festival-detail-title-row">
             <h1 className="festival-detail-title">{data.title}</h1>
-            <a href={data.homepage} target="_blank" rel="noopener noreferrer" className="festival-detail-homepage-btn">
-              홈페이지
-              <ExternalLinkIcon />
-            </a>
+            {data.homepage && (
+              <a href={data.homepage} target="_blank" rel="noopener noreferrer" className="festival-detail-homepage-btn">
+                홈페이지
+                <ExternalLinkIcon />
+              </a>
+            )}
           </div>
           <p className="festival-detail-subtitle">{data.subtitle}</p>
           <div className="festival-detail-meta-row">

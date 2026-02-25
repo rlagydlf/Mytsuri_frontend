@@ -7,8 +7,17 @@ import NavigationBar from '../components/NavigationBar'
 import RegionSelectSheet from '../components/RegionSelectSheet/RegionSelectSheet'
 import DateSelectSheet from '../components/DateSelectSheet/DateSelectSheet'
 import TypeSelectSheet from '../components/TypeSelectSheet/TypeSelectSheet'
+import AddToListSheet from '../components/AddToListSheet/AddToListSheet'
 import { PREFECTURE_BOUNDS, JAPAN_BOUNDS } from '../data/regions'
 import './Map.css'
+
+function ListIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+    </svg>
+  )
+}
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
 
@@ -56,6 +65,8 @@ function MapPage() {
   const [regionSheetOpen, setRegionSheetOpen] = useState(false)
   const [dateSheetOpen, setDateSheetOpen] = useState(false)
   const [typeSheetOpen, setTypeSheetOpen] = useState(false)
+  const [listSheetOpen, setListSheetOpen] = useState(false)
+  const [festivalBottomSheet, setFestivalBottomSheet] = useState(null)
 
   // API에서 필터와 마커 데이터 가져오기
   useEffect(() => {
@@ -310,6 +321,7 @@ function MapPage() {
               }}
               style={{ width: '100%', height: '100%' }}
               mapStyle="mapbox://styles/mapbox/streets-v12"
+              onClick={() => { setSelectedMarker(null); setFestivalBottomSheet(null) }}
             >
               {festivalMarkers.map((m) => {
                 const lon = m.longitude || m.lon
@@ -321,7 +333,32 @@ function MapPage() {
                     longitude={lon}
                     latitude={lat}
                     anchor="bottom"
-                    onClick={() => setSelectedMarker(selectedMarker === m.id ? null : m.id)}
+                    onClick={async () => {
+                      if (selectedMarker === m.id) {
+                        setSelectedMarker(null)
+                        setFestivalBottomSheet(null)
+                        return
+                      }
+                      setSelectedMarker(m.id)
+                      setFestivalBottomSheet({ id: m.id, name: m.name, startDate: m.startDate, location: m.location, hashtags: m.hashtags || [], mainImage: m.image || null, reviewPhotos: [] })
+                      try {
+                        const res = await fetch(`http://localhost:5000/api/festivals/${m.id}`, { credentials: 'include' })
+                        if (res.ok) {
+                          const data = await res.json()
+                          const mainImage = (data.images && data.images[0]) || data.image || m.image || null
+                          const reviewPhotos = data.photos || []
+                          setFestivalBottomSheet({
+                            id: m.id,
+                            name: data.name || m.name,
+                            startDate: data.startDate || m.startDate,
+                            location: data.location || m.location,
+                            hashtags: data.hashtags || [],
+                            mainImage,
+                            reviewPhotos,
+                          })
+                        }
+                      } catch { /* use marker data */ }
+                    }}
                   >
                     <img
                       src={selectedMarker === m.id ? '/assets/map/marker_active.svg' : '/assets/map/marker_inactive.svg'}
@@ -387,6 +424,64 @@ function MapPage() {
           </div>
         )}
       </div>
+
+      {/* 마커 선택 시 하단 시트 */}
+      {festivalBottomSheet && (
+        <div className="map-bottom-sheet">
+          <div className="map-bottom-sheet-handle" />
+          <div
+            className="map-bottom-sheet-body"
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate(`/festival/${festivalBottomSheet.id}`, { state: { from: 'map' } })}
+            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && navigate(`/festival/${festivalBottomSheet.id}`, { state: { from: 'map' } })}
+          >
+            <div className="map-bottom-sheet-top">
+              <div className="map-bottom-sheet-info">
+                <h2 className="map-bottom-sheet-title">{festivalBottomSheet.name}</h2>
+                {festivalBottomSheet.hashtags.length > 0 && (
+                  <div className="map-bottom-sheet-tags">
+                    {festivalBottomSheet.hashtags.map((tag, i) => (
+                      <span key={i} className="map-bottom-sheet-tag">{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                className="map-bottom-sheet-list-btn"
+                onClick={(e) => { e.stopPropagation(); setListSheetOpen(true) }}
+                aria-label="리스트에 추가"
+              >
+                <ListIcon />
+              </button>
+            </div>
+            {(festivalBottomSheet.mainImage || festivalBottomSheet.reviewPhotos.length > 0) && (
+              <div className="map-bottom-sheet-photos">
+                {festivalBottomSheet.mainImage && (
+                  <div className="map-bottom-sheet-photo">
+                    <img src={festivalBottomSheet.mainImage} alt="" />
+                  </div>
+                )}
+                {festivalBottomSheet.reviewPhotos.slice(0, festivalBottomSheet.mainImage ? 2 : 3).map((photo, i) => (
+                  <div key={i} className="map-bottom-sheet-photo">
+                    <img src={photo} alt="" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {festivalBottomSheet && listSheetOpen && (
+        <AddToListSheet
+          isOpen={listSheetOpen}
+          onClose={() => setListSheetOpen(false)}
+          festivalId={festivalBottomSheet.id}
+          festivalImages={[...(festivalBottomSheet.mainImage ? [festivalBottomSheet.mainImage] : []), ...festivalBottomSheet.reviewPhotos]}
+        />
+      )}
 
       <RegionSelectSheet
         key={`region-${regionSheetOpen}`}

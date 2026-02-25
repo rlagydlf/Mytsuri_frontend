@@ -3,6 +3,7 @@
   background: #000;
   color: #fff;
   padding-bottom: 80px;
+  overflow-x: hidden;
   --top-height: calc(68px + env(safe-area-inset-top, 0px) + 52px + 44px);
 }
 
@@ -21,6 +22,8 @@
   right: 0;
   z-index: 1000;
   background: #000;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .festival-list-header {
@@ -148,6 +151,7 @@
   padding-left: 20px;
   padding-right: 20px;
   padding-bottom: 24px;
+  overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
