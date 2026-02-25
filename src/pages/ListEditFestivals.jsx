@@ -197,7 +197,10 @@ function ListEditFestivals() {
       {modalOpen && (
         <div className="lef-modal-overlay" onClick={handleCancel}>
           <div className="lef-modal" onClick={(e) => e.stopPropagation()}>
-            <p className="lef-modal-title">리스트에서 축제를 삭제할까요?</p>
+            <div className="lef-modal-text">
+              <p className="lef-modal-title">리스트에서 축제를 삭제할까요?</p>
+              <p className="lef-modal-desc">삭제된 축제는 복구할 수 없어요</p>
+            </div>
             <div className="lef-modal-actions">
               <button type="button" className="lef-modal-cancel" onClick={handleCancel}>취소</button>
               <button type="button" className="lef-modal-confirm" onClick={handleDeleteConfirm}>삭제하기</button>

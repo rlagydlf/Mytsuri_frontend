@@ -56,6 +56,7 @@ function Home() {
   const [categories, setCategories] = useState(EMPTY_CATEGORIES)
   const [cities, setCities] = useState(EMPTY_CITIES)
   const [festivals, setFestivals] = useState(EMPTY_FESTIVALS)
+  const [publicLists, setPublicLists] = useState([])
   const [loadError, setLoadError] = useState('')
   const touchStartX = useRef(0)
 
@@ -112,6 +113,16 @@ function Home() {
       isMounted = false
       controller.abort()
     }
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+    fetch('http://localhost:5000/api/lists/public', { signal: controller.signal, credentials: 'include' })
+      .then((res) => res.ok ? res.json() : [])
+      .then((data) => { if (isMounted && Array.isArray(data)) setPublicLists(data.filter((l) => l.isPublic === true)) })
+      .catch(() => {})
+    return () => { isMounted = false; controller.abort() }
   }, [])
 
   useEffect(() => {
@@ -274,6 +285,45 @@ function Home() {
           <div className="festival-scroll">
             {festivalsByDate.map((card) => (
               <FestivalCard key={`s-${card.id}`} data={card} onClick={() => navigate(`/festival/${card.id}`, { state: { from: 'home' } })} />
+            ))}
+          </div>
+        </section>
+
+        <section className="public-lists-section">
+          <div className="section-header">
+            <div className="section-header-inner">
+              <h3 className="section-title">다른 사람들은 어떤 축제를 갈까요?</h3>
+              <p className="section-subtitle">다른 공개 리스트를 참고해보아요!</p>
+            </div>
+            <button type="button" className="section-more" aria-label="더보기" onClick={() => navigate('/list')}><ArrowIcon /></button>
+          </div>
+          <div className="public-lists-scroll">
+            {publicLists.map((list) => (
+              <button
+                key={list.id}
+                type="button"
+                className="public-list-card"
+                onClick={() => navigate(`/list/${list.id}`)}
+              >
+                {list.coverImage && (
+                  <img src={list.coverImage} alt="" className="public-list-card-bg" />
+                )}
+                <div className="public-list-card-gradient" />
+                <div className="public-list-card-top">
+                  <p className="public-list-card-title">{list.name}</p>
+                  <p className="public-list-card-count">{list.festivalCount ?? list.festivals?.length ?? 0}개의 축제</p>
+                </div>
+                {list.festivals && list.festivals.length > 0 && (
+                  <div className="public-list-card-thumbs">
+                    {list.festivals.slice(0, 2).map((f, i) => (
+                      <div key={i} className="public-list-card-thumb">
+                        {f.image && <img src={f.image} alt={f.title} />}
+                        <p className="public-list-card-thumb-name">{f.title}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </button>
             ))}
           </div>
         </section>

@@ -364,6 +364,126 @@
   border-radius: 16px;
 }
 
+.public-lists-section {
+  margin-bottom: 32px;
+}
+
+.public-lists-scroll {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 4px 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.public-lists-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.public-list-card {
+  flex: 0 0 273px;
+  height: 222px;
+  border-radius: 20px;
+  border: 1px solid #eee;
+  background: #070707;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.public-list-card-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.public-list-card-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(128, 128, 128, 0.41) 55%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  pointer-events: none;
+}
+
+.public-list-card-top {
+  position: absolute;
+  top: 21px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.public-list-card-title {
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.72px;
+  line-height: 1.4;
+}
+
+.public-list-card-count {
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9e9e9e;
+  letter-spacing: -0.12px;
+  line-height: 1.4;
+}
+
+.public-list-card-thumbs {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 102px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+}
+
+.public-list-card-thumb {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.public-list-card-thumb img {
+  width: 100%;
+  height: 77px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.public-list-card-thumb-name {
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #fff;
+  letter-spacing: -0.12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .home-bottom-pad {
   height: 20px;
 }
