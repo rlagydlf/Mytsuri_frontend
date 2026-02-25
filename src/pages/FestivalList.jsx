@@ -58,8 +58,8 @@ function FestivalList() {
           params.append('city', cityId)
         } else if (sectionType) {
           params.append('section', sectionType)
-        } else if (activeTab) {
-          params.append('season', activeTab)
+        } else if (category) {
+          params.append('season', category)
         }
 
         const response = await fetch(`http://localhost:5000/api/festivals?${params.toString()}`)
@@ -79,7 +79,7 @@ function FestivalList() {
     }
 
     fetchFestivals()
-  }, [activeTab, cityId, sectionType])
+  }, [category, cityId, sectionType])
 
   useEffect(() => {
     let isMounted = true
@@ -137,7 +137,7 @@ function FestivalList() {
       return
     }
 
-    if (!cityId && !activeTab) {
+    if (!cityId && !category) {
       const sortedCategories = [...categories].sort((a, b) => {
         const aIndex = categoryOrderIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER
         const bIndex = categoryOrderIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER
@@ -147,7 +147,7 @@ function FestivalList() {
         setActiveTab(sortedCategories[0].id)
       }
     }
-  }, [category, categories, cityId, activeTab, categoryOrderIndex])
+  }, [category, categories, cityId, categoryOrderIndex])
 
   const orderedCategories = [...categories].sort((a, b) => {
     const aIndex = categoryOrderIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER
@@ -188,7 +188,10 @@ function FestivalList() {
               key={tab.id}
               type="button"
               className={`festival-list-tab ${activeTab === tab.id ? 'festival-list-tab--active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id)
+                navigate(`/festivals/${tab.id}`)
+              }}
             >
               {tab.label.replace(/\s*축제$/u, '')}
             </button>

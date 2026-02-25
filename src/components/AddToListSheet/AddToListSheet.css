@@ -92,6 +92,26 @@
   flex-shrink: 0;
 }
 
+.add-to-list-error-msg {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  background: rgba(244, 67, 54, 0.12);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #F44336;
+  flex-shrink: 0;
+}
+
+.add-to-list-loading,
+.add-to-list-empty {
+  padding: 24px 12px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #9E9E9E;
+}
+
+
 .add-to-list-content {
   overflow-y: auto;
   overflow-x: hidden;
@@ -114,11 +134,18 @@
   color: inherit;
   cursor: pointer;
   text-align: left;
+  transition: opacity 0.2s ease;
 }
 
 .add-to-list-item:last-child {
   border-bottom: none;
 }
+
+.add-to-list-item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 
 .add-to-list-item-thumb {
   flex-shrink: 0;

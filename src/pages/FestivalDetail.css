@@ -457,6 +457,33 @@
   white-space: pre-wrap;
 }
 
+.review-card-images {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.review-card-images::-webkit-scrollbar {
+  display: none;
+}
+
+.review-card-image {
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+.review-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .review-item:not(:last-child)::after {
   content: '';
   display: block;

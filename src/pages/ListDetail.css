@@ -634,6 +634,15 @@
   font-weight: 500;
   font-size: 12px;
   color: #E0E0E0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.ld-festival-card-bookmark:hover {
+  opacity: 0.8;
 }
 
 .ld-festival-card-bookmark img {
@@ -671,4 +680,74 @@
   opacity: 1;
   transform: translateX(-50%) translateY(0);
   pointer-events: auto;
+}
+.ld-delete-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(33, 33, 33, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.ld-delete-modal {
+  background: #1A1A1A;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 320px;
+  width: calc(100% - 40px);
+  text-align: center;
+}
+
+.ld-delete-modal-title {
+  margin: 0 0 12px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #F5F5F5;
+}
+
+.ld-delete-modal-description {
+  margin: 0 0 24px;
+  font-size: 0.875rem;
+  color: #9E9E9E;
+}
+
+.ld-delete-modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.ld-delete-modal-cancel {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #424242;
+  border-radius: 8px;
+  background: transparent;
+  color: #F5F5F5;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ld-delete-modal-cancel:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ld-delete-modal-confirm {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #FC4A3A;
+  color: #FFF;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ld-delete-modal-confirm:hover {
+  background: #E63D2E;
+}
+
+.ld-dropdown-item--danger {
+  color: #FC4A3A;
 }

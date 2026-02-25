@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import StatusBar from '../components/StatusBar'
 import NavigationBar from '../components/NavigationBar'
@@ -82,14 +82,84 @@ const DUMMY_REVIEWS = [
 
 function Profile() {
   const navigate = useNavigate()
-  const user = DUMMY_USER
-  const reviews = DUMMY_REVIEWS
+  const [user, setUser] = useState(null)
+  const [reviews, setReviews] = useState([])
   const [expanded, setExpanded] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  const handleLogout = async () => {
-    try {
-      await fetch('http://localhost:5000/api/auth/logout', { method: 'POST', credentials: 'include' })
-    } catch { /* ignore */ }
+  useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        // 사용자 정보 조회
+        const userRes = await fetch('http://localhost:5000/api/users/me', {
+          credentials: 'include',
+          signal: controller.signal,
+        })
+        
+        if (!userRes.ok) {
+          if (userRes.status === 401) {
+            navigate('/login')
+            return
+          }
+          throw new Error('사용자 정보 조회 실패')
+        }
+        
+        const userData = await userRes.json()
+        
+        // 리뷰 조회
+        const reviewsRes = await fetch('http://localhost:5000/api/users/me/reviews', {
+          credentials: 'include',
+          signal: controller.signal,
+        })
+        
+        let reviewsData = []
+        if (reviewsRes.ok) {
+          reviewsData = await reviewsRes.json()
+        }
+
+        if (isMounted) {
+          setUser({
+            name: userData.nickname || '사용자',
+            avatar: userData.profileImg 
+              ? `http://localhost:5000${userData.profileImg}`
+              : `http://localhost:5000/uploads/profiles/default.svg`,
+          })
+          setReviews(reviewsData.map((r) => ({
+            id: r.id,
+            festivalName: r.festivalName,
+            festivalId: r.festivalId,
+            date: r.date,
+            rating: r.rating,
+            text: r.content,
+          })))
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') return
+        console.error('프로필 데이터 조회 오류:', err)
+        if (isMounted) {
+          setUser({ 
+            name: '사용자', 
+            avatar: `http://localhost:5000/uploads/profiles/default.svg`
+          })
+          setReviews(DUMMY_REVIEWS)
+        }
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+
+    fetchData()
+    return () => { isMounted = false; controller.abort() }
+  }, [])
+
+  const handleLogout = () => {
+    // 로그아웃 API 호출 (백그라운드)
+    fetch('http://localhost:5000/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {})
+    // 즉시 로그인 페이지로 이동
     navigate('/login')
   }
 
@@ -102,6 +172,30 @@ function Profile() {
   }
 
   const displayedReviews = expanded ? reviews : reviews.slice(0, 3)
+
+  if (loading) {
+    return (
+      <div className="pf-page">
+        <div className="pf-status-top"><StatusBar /></div>
+        <div className="pf-content">
+          <p style={{ textAlign: 'center', marginTop: '2rem' }}>로딩 중...</p>
+        </div>
+        <NavigationBar />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="pf-page">
+        <div className="pf-status-top"><StatusBar /></div>
+        <div className="pf-content">
+          <p style={{ textAlign: 'center', marginTop: '2rem' }}>사용자 정보를 불러올 수 없습니다</p>
+        </div>
+        <NavigationBar />
+      </div>
+    )
+  }
 
   return (
     <div className="pf-page">
@@ -117,7 +211,6 @@ function Profile() {
             </div>
             <div className="pf-user-info">
               <p className="pf-user-name">{user.name}</p>
-              <p className="pf-user-bio">{user.bio}</p>
             </div>
           </div>
           <button type="button" className="pf-edit-btn" onClick={() => navigate('/profile/edit')}>
@@ -135,7 +228,15 @@ function Profile() {
                   <div className="pf-review-header">
                     <div className="pf-review-festival">
                       <LocationIcon />
-                      <span className="pf-review-festival-name">{review.festivalName}</span>
+                      <span 
+                        className="pf-review-festival-name"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => navigate(`/festival/${review.festivalId}`)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {review.festivalName}
+                      </span>
                     </div>
                     <span className="pf-review-date">{review.date}</span>
                   </div>

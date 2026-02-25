@@ -50,11 +50,7 @@ const DUMMY_DATA = {
   homepage: 'https://www.takayamafestival.com',
 }
 
-const DUMMY_REVIEWS = [
-  { id: 1, userName: '홍길동', rating: 4, date: '2026.02.15', tags: ['전통 행사를 볼 수 있어요', '소규모예요', '노점이 많아요'], body: '볼거리도 많고 밤에 진행되는 퍼레이드가 특히 인상적이었어요.\n아이와 어른이 함께 즐길 수 있어서 가족 여행 코스로 추천해요.' },
-  { id: 2, userName: '홍길동', rating: 1, date: '2026.02.15', tags: ['전통 행사를 볼 수 있어요', '소규모예요', '노점이 많아요'], body: '볼거리도 많고 밤에 진행되는 퍼레이드가 특히 인상적이었어요.\n아이와 어른이 함께 즐길 수 있어서 가족 여행 코스로 추천해요.' },
-  { id: 3, userName: '홍길동', rating: 5, date: '2026.02.15', tags: ['전통 행사를 볼 수 있어요', '소규모예요', '노점이 많아요'], body: '볼거리도 많고 밤에 진행되는 퍼레이드가 특히 인상적이었어요.\n아이와 어른이 함께 즐길 수 있어서 가족 여행 코스로 추천해요.' },
-]
+
 
 function BackIcon() {
   return (
@@ -188,6 +184,59 @@ function FestivalDetail() {
   const [addToListOpen, setAddToListOpen] = useState(false)
   const [addedToList, setAddedToList] = useState(false)
   const [reviewSortDesc, setReviewSortDesc] = useState(true)
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [reviews, setReviews] = useState([])
+  const [reviewsLoading, setReviewsLoading] = useState(false)
+
+  useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+
+    const fetchFestivalDetail = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const res = await fetch(`http://localhost:5000/api/festivals/${id}`, {
+          signal: controller.signal,
+          credentials: 'include'
+        })
+
+        if (!res.ok) {
+          throw new Error('축제 정보를 불러오지 못했어요.')
+        }
+
+        const festivalData = await res.json()
+        
+        if (isMounted) {
+          setData({
+            ...festivalData,
+            images: [festivalData.image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800'],
+            photos: festivalData.photos && festivalData.photos.length > 0 
+              ? festivalData.photos 
+              : [festivalData.image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400'],
+          })
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError' && isMounted) {
+          setError(err.message)
+          setData(DUMMY_DATA)
+        }
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+
+    if (id) {
+      fetchFestivalDetail()
+    }
+
+    return () => {
+      isMounted = false
+      controller.abort()
+    }
+  }, [id])
 
   useEffect(() => {
     if (location.state?.openAddToList) {
@@ -197,7 +246,62 @@ function FestivalDetail() {
     }
   }, [location.state?.openAddToList, location.pathname, navigate])
 
-  const data = DUMMY_DATA
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!id) return
+      try {
+        setReviewsLoading(true)
+        const res = await fetch(`http://localhost:5000/api/festivals/${id}/reviews`, {
+          credentials: 'include'
+        })
+        if (res.ok) {
+          const reviewsData = await res.json()
+          setReviews(reviewsData)
+        }
+      } catch (err) {
+        console.error('Failed to fetch reviews:', err)
+      } finally {
+        setReviewsLoading(false)
+      }
+    }
+    fetchReviews()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="festival-detail-page">
+        <div className="festival-detail-top-fixed">
+          <StatusBar />
+          <header className="festival-detail-header">
+            <button type="button" className="festival-detail-header-btn" onClick={() => navigate(-1)} aria-label="뒤로">
+              <BackIcon />
+            </button>
+          </header>
+        </div>
+        <main className="festival-detail-main">
+          <p className="festival-detail-empty">로딩 중...</p>
+        </main>
+      </div>
+    )
+  }
+
+  if (error || !data) {
+    return (
+      <div className="festival-detail-page">
+        <div className="festival-detail-top-fixed">
+          <StatusBar />
+          <header className="festival-detail-header">
+            <button type="button" className="festival-detail-header-btn" onClick={() => navigate(-1)} aria-label="뒤로">
+              <BackIcon />
+            </button>
+          </header>
+        </div>
+        <main className="festival-detail-main">
+          <p className="festival-detail-empty">{error || '축제 정보를 찾을 수 없어요.'}</p>
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className="festival-detail-page">
@@ -310,9 +414,11 @@ function FestivalDetail() {
               </button>
             </div>
 
-            {DUMMY_REVIEWS.length > 0 ? (
+            {reviewsLoading ? (
+              <p className="festival-detail-empty">로딩 중...</p>
+            ) : reviews.length > 0 ? (
               <div className="review-list">
-                {(reviewSortDesc ? [...DUMMY_REVIEWS] : [...DUMMY_REVIEWS].reverse()).map((review, idx, arr) => (
+                {(reviewSortDesc ? [...reviews] : [...reviews].reverse()).map((review, idx, arr) => (
                   <div key={review.id} className="review-item">
                     <div className="review-card">
                       <div className="review-card-top">
@@ -335,6 +441,15 @@ function FestivalDetail() {
                         </div>
                       )}
                       <p className="review-card-body">{review.body}</p>
+                      {review.images && review.images.length > 0 && (
+                        <div className="review-card-images">
+                          {review.images.map((img, imgIdx) => (
+                            <div key={imgIdx} className="review-card-image">
+                              <img src={img} alt={`리뷰 사진 ${imgIdx + 1}`} loading="lazy" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -372,7 +487,7 @@ function FestivalDetail() {
         isOpen={addToListOpen}
         onClose={() => { setAddToListOpen(false); setAddedToList(false) }}
         festivalId={id}
-        festivalImages={data.images}
+        festivalImages={data?.images || []}
         addedToList={addedToList}
       />
     </div>

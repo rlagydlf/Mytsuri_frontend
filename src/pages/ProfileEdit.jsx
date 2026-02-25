@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import StatusBar from '../components/StatusBar'
 import './ProfileEdit.css'
@@ -28,22 +28,49 @@ function CheckIcon() {
   )
 }
 
-const DUMMY_PROFILE = {
-  name: '김미림',
-  gender: '여성',
-  age: '21',
-  avatar: null,
-}
-
 function ProfileEdit() {
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
 
-  const [name, setName] = useState(DUMMY_PROFILE.name)
-  const [gender, setGender] = useState(DUMMY_PROFILE.gender)
-  const [age, setAge] = useState(DUMMY_PROFILE.age)
+  const [name, setName] = useState('')
+  const [gender, setGender] = useState('여성')
+  const [age, setAge] = useState('')
   const [avatar, setAvatar] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+
+    const fetchUserInfo = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/users/me', {
+          credentials: 'include',
+          signal: controller.signal,
+        })
+        if (!res.ok) throw new Error('사용자 정보 조회 실패')
+        const data = await res.json()
+        if (isMounted) {
+          setName(data.name || '')
+          setGender(data.gender || '여성')
+          setAge(data.age || '')
+          // 기존 프로필 이미지 설정
+          if (data.profileImg) {
+            setAvatarPreview(`http://localhost:5000${data.profileImg}`)
+          }
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') return
+        console.error('사용자 정보 조회 오류:', err)
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+
+    fetchUserInfo()
+    return () => { isMounted = false; controller.abort() }
+  }, [])
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0]
@@ -60,14 +87,19 @@ function ProfileEdit() {
     if (!canSave) return
 
     try {
+      const formData = new FormData()
+      formData.append('name', name.trim())
+      formData.append('gender', gender)
+      if (age.trim()) formData.append('age', age.trim())
+      if (avatar) formData.append('profileImage', avatar)
+
       await fetch('http://localhost:5000/api/users/me', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ name: name.trim(), gender, age }),
+        body: formData,
       })
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error('프로필 저장 오류:', err)
     }
 
     navigate('/profile')
@@ -113,6 +145,7 @@ function ProfileEdit() {
                 className="ped-input"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                placeholder={name || '이름을 입력하세요'}
                 autoComplete="off"
               />
               {name.trim() && <CheckIcon />}
@@ -147,6 +180,7 @@ function ProfileEdit() {
                 className="ped-input"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
+                placeholder={age || '나이를 입력하세요'}
                 autoComplete="off"
                 inputMode="numeric"
               />

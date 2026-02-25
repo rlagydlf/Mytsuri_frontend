@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import StatusBar from '../components/StatusBar'
+import AddToListSheet from '../components/AddToListSheet/AddToListSheet'
 import './ListDetail.css'
 
 function LeftArrowIcon() {
@@ -77,20 +78,6 @@ function BookmarkIcon() {
   )
 }
 
-const DUMMY_LIST_DETAIL = {
-  id: 1,
-  name: '가고 싶은 여름 축제',
-  coverImage: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800',
-  sharedWith: '야호',
-  isPublic: true,
-  festivals: [
-    { id: 101, title: '타카야마 여름 축제', image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400', location: '기후현 타카야마시', date: '2026년 7월', rating: 4.8, reviewCount: 231, bookmarkCount: 124 },
-    { id: 102, title: '기온 마츠리', image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400', location: '교토부 교토시', date: '2026년 7월', rating: 4.6, reviewCount: 189, bookmarkCount: 98 },
-    { id: 103, title: '텐진 마쓰리', image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400', location: '오사카부 오사카시', date: '2026년 7월', rating: 4.5, reviewCount: 156, bookmarkCount: 87 },
-    { id: 104, title: '아오모리 네부타', image: 'https://images.unsplash.com/photo-1480796927426-f609979314bd?w=400', location: '아오모리현 아오모리시', date: '2026년 8월', rating: 4.9, reviewCount: 312, bookmarkCount: 201 },
-  ],
-}
-
 function ListDetail() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -109,6 +96,9 @@ function ListDetail() {
   const [sortKey, setSortKey] = useState('newest')
   const [moreOpen, setMoreOpen] = useState(false)
   const [sortOpen, setSortOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [addToListOpen, setAddToListOpen] = useState(false)
+  const [selectedFestivalId, setSelectedFestivalId] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
   const [toastMsg, setToastMsg] = useState('리스트에 축제가 추가되었어요')
   const moreRef = useRef(null)
@@ -176,7 +166,10 @@ function ListDetail() {
         if (isMounted) setListData(data)
       } catch (e) {
         if (e.name === 'AbortError') return
-        if (isMounted) setListData(DUMMY_LIST_DETAIL)
+        if (isMounted) {
+          console.error('Failed to fetch list:', e)
+          setListData(null)
+        }
       } finally {
         if (isMounted) setListLoading(false)
       }
@@ -189,7 +182,13 @@ function ListDetail() {
   const handleImageChange = (e) => {
     const file = e.target.files?.[0]
     if (file && file.type.startsWith('image/')) {
-      setSelectedImage(URL.createObjectURL(file))
+      const reader = new FileReader()
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setSelectedImage(reader.result)
+        }
+      }
+      reader.readAsDataURL(file)
     }
     e.target.value = ''
   }
@@ -200,7 +199,9 @@ function ListDetail() {
 
   useEffect(() => {
     return () => {
-      if (selectedImage) URL.revokeObjectURL(selectedImage)
+      if (selectedImage && selectedImage.startsWith('blob:')) {
+        URL.revokeObjectURL(selectedImage)
+      }
     }
   }, [selectedImage])
 
@@ -212,11 +213,82 @@ function ListDetail() {
     }
   }
 
-  const handleNext = () => {
-    if (isNew && listName.trim()) {
-      // TODO: API call to create list with selectedImage, listName, isPublic, festivalId
+  const handleNext = async () => {
+    if (!isNew || !listName.trim()) {
+      console.log('handleNext 취소:', { isNew, listNameTrim: listName.trim() })
+      handleBackOrComplete()
+      return
     }
-    handleBackOrComplete()
+
+    try {
+      setListLoading(true)
+      console.log('리스트 생성 시작:', { listName, isPublic, hasImage: !!selectedImage })
+      
+      const isValidCover = typeof selectedImage === 'string' && (selectedImage.startsWith('http') || selectedImage.startsWith('data:'))
+      const payload = {
+        name: listName.trim(),
+        isPublic,
+        coverImage: isValidCover ? selectedImage : 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800',
+      }
+      
+      if (festivalId) {
+        payload.festivalId = festivalId
+      }
+
+      console.log('POST 요청 전송:', payload)
+      const res = await fetch('http://localhost:5000/api/lists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      })
+
+      console.log('응답 상태:', res.status, res.statusText)
+      
+      if (!res.ok) {
+        const errData = await res.text()
+        console.error('응답 에러:', errData)
+        throw new Error(`리스트 생성 실패: ${res.status}`)
+      }
+      
+      const newList = await res.json()
+      console.log('생성된 리스트:', newList)
+      navigate(`/list/${newList.id}`, { state: { listCreated: true } })
+    } catch (err) {
+      console.error('Error creating list:', err)
+      setToastMsg('리스트 생성에 실패했어요')
+      setToastVisible(true)
+    } finally {
+      setListLoading(false)
+    }
+  }
+
+  const handleDeleteList = async () => {
+    try {
+      console.log('리스트 삭제 시작 - ID:', id)
+      setListLoading(true)
+      const res = await fetch(`http://localhost:5000/api/lists/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      })
+      console.log('삭제 응답 상태:', res.status, res.statusText)
+      
+      if (!res.ok) {
+        const errData = await res.text()
+        console.error('삭제 에러 응답:', errData)
+        throw new Error('리스트 삭제 실패')
+      }
+      
+      console.log('리스트 삭제 성공, /list로 이동')
+      navigate('/list')
+    } catch (err) {
+      console.error('handleDeleteList 에러:', err)
+      setToastMsg('리스트 삭제에 실패했어요')
+      setToastVisible(true)
+    } finally {
+      setListLoading(false)
+    }
   }
 
   const SORT_OPTIONS = [
@@ -239,7 +311,11 @@ function ListDetail() {
         <StatusBar />
 
         <div className="ld-cover">
-          <img src={listData?.coverImage || ''} alt="" className="ld-cover-img" />
+          <img
+            src={listData?.coverImage?.startsWith('blob:') ? '' : (listData?.coverImage || '')}
+            alt=""
+            className="ld-cover-img"
+          />
           <div className="ld-cover-gradient" />
 
           <header className="ld-cover-header">
@@ -338,10 +414,19 @@ function ListDetail() {
                       <img src="/assets/star_icon.svg" alt="" aria-hidden />
                       {item.rating}<span className="ld-festival-card-reviews">({item.reviewCount})</span>
                     </span>
-                    <span className="ld-festival-card-bookmark">
+                    <button 
+                      type="button" 
+                      className="ld-festival-card-bookmark"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedFestivalId(item.id)
+                        setAddToListOpen(true)
+                      }}
+                      aria-label="리스트에 추가"
+                    >
                       <img src="/assets/list_icon.svg" alt="" aria-hidden />
                       {item.bookmarkCount}
-                    </span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -353,7 +438,7 @@ function ListDetail() {
           <div ref={moreDropRef} className="ld-dropdown" style={{ top: morePos.top, right: morePos.right }}>
             <button type="button" className="ld-dropdown-item ld-dropdown-item--first" onClick={() => { setMoreOpen(false); navigate(`/list/${id}/edit`) }}>리스트 편집</button>
             <button type="button" className="ld-dropdown-item" onClick={() => { setMoreOpen(false); navigate(`/list/${id}/edit-festivals`) }}>축제 편집</button>
-            <button type="button" className="ld-dropdown-item ld-dropdown-item--last" onClick={async () => {
+            <button type="button" className="ld-dropdown-item" onClick={async () => {
               setMoreOpen(false)
               const url = `${window.location.origin}/list/${id}/invite`
               if (navigator.share) {
@@ -362,6 +447,7 @@ function ListDetail() {
                 try { await navigator.clipboard.writeText(url); setToastMsg('초대 링크가 복사되었어요'); setToastVisible(true) } catch { /* ignore */ }
               }
             }}>친구 초대하기</button>
+            <button type="button" className="ld-dropdown-item ld-dropdown-item--last ld-dropdown-item--danger" onClick={() => { setMoreOpen(false); setDeleteModalOpen(true) }}>리스트 삭제</button>
           </div>
         )}
 
@@ -380,9 +466,32 @@ function ListDetail() {
           </div>
         )}
 
+        {deleteModalOpen && (
+          <div className="ld-delete-modal-overlay" onClick={() => setDeleteModalOpen(false)}>
+            <div className="ld-delete-modal" onClick={(e) => e.stopPropagation()}>
+              <h2 className="ld-delete-modal-title">리스트를 삭제할까요?</h2>
+              <p className="ld-delete-modal-description">삭제된 리스트는 복구할 수 없습니다.</p>
+              <div className="ld-delete-modal-actions">
+                <button type="button" className="ld-delete-modal-cancel" onClick={() => setDeleteModalOpen(false)}>취소</button>
+                <button type="button" className="ld-delete-modal-confirm" onClick={() => { setDeleteModalOpen(false); handleDeleteList() }}>삭제하기</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className={`ld-toast ${toastVisible ? 'ld-toast--visible' : ''}`}>
           {toastMsg}
         </div>
+
+        <AddToListSheet
+          isOpen={addToListOpen}
+          onClose={() => {
+            setAddToListOpen(false)
+            setSelectedFestivalId(null)
+          }}
+          festivalId={selectedFestivalId}
+          festivalImages={[]}
+        />
       </div>
     )
   }
@@ -434,15 +543,17 @@ function ListDetail() {
 
             <section className="list-detail-section">
               <label className="list-detail-label" htmlFor="list-name-input">
+                리스트 이름
               </label>
               <input
                 id="list-name-input"
                 type="text"
                 className="list-detail-input"
-                placeholder=""
+                placeholder="리스트 이름을 입력하세요"
                 value={listName}
                 onChange={(e) => setListName(e.target.value)}
                 autoComplete="off"
+                autoFocus
               />
             </section>
 
@@ -476,10 +587,15 @@ function ListDetail() {
 
             <button
               type="button"
-              className={`list-detail-next-btn ${listName.trim() ? 'list-detail-next-btn--active' : ''}`}
-              onClick={handleNext}
+              disabled={!listName.trim() || listLoading}
+              className={`list-detail-next-btn ${listName.trim() && !listLoading ? 'list-detail-next-btn--active' : ''}`}
+              onClick={() => {
+                console.log('완료 버튼 클릭:', { listName, isPublic, isNew, listLoading })
+                handleNext()
+              }}
+              aria-label={listLoading ? '완료 중...' : '완료'}
             >
-              완료
+              {listLoading ? '저장 중...' : '완료'}
             </button>
           </>
         )}

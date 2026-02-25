@@ -128,14 +128,18 @@ function ListAddFestival() {
 
   const handleSelectFestival = async (festival) => {
     try {
-      await fetch(`http://localhost:5000/api/lists/${id}/festivals`, {
+      const res = await fetch(`http://localhost:5000/api/lists/${id}/items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ festivalId: festival.id }),
       })
-    } catch {
-      // ignore
+      if (!res.ok) {
+        console.error('축제 추가 실패:', res.status)
+        throw new Error('축제 추가 실패')
+      }
+    } catch (err) {
+      console.error('handleSelectFestival 에러:', err)
     }
     navigate(`/list/${id}`, { state: { festivalAdded: true } })
   }

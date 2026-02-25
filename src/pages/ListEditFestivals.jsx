@@ -93,7 +93,7 @@ function ListEditFestivals() {
     setModalOpen(false)
 
     try {
-      await fetch(`http://localhost:5000/api/lists/${id}/festivals/${pendingDeleteId}`, {
+      await fetch(`http://localhost:5000/api/lists/${id}/items/${pendingDeleteId}`, {
         method: 'DELETE',
         credentials: 'include',
       })

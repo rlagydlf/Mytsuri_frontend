@@ -1,17 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './AddToListSheet.css'
-
-const DUMMY_LISTS = [
-  { id: 1, name: '여름 축제', sharedWith: '오후의홍차와 공유', count: 32, thumbnail: null },
-  { id: 2, name: '겨울 축제', sharedWith: null, count: 15, thumbnail: null },
-  { id: 3, name: '가고 싶은 곳', sharedWith: null, count: 8, thumbnail: null },
-  { id: 4, name: '북마크', sharedWith: null, count: 24, thumbnail: null },
-  { id: 5, name: 'ㅇㅇ', sharedWith: null, count: 24, thumbnail: null },
-  { id: 6, name: 'ㄴㄴ', sharedWith: null, count: 24, thumbnail: null },
-  { id: 7, name: '북ㅁㅁ마크', sharedWith: null, count: 24, thumbnail: null },
-  { id: 8, name: '북마ㅁㅁㅁㅁㅁㅁ크', sharedWith: null, count: 24, thumbnail: null },  
-]
 
 function PlusIcon() {
   return (
@@ -24,21 +13,86 @@ function PlusIcon() {
 
 function AddToListSheet({ isOpen, onClose, festivalId, festivalImages = [], addedToList = false }) {
   const navigate = useNavigate()
+  const [lists, setLists] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [addingToList, setAddingToList] = useState(null)
+  const [successMessage, setSuccessMessage] = useState(false)
 
   useEffect(() => {
+    console.log('AddToListSheet isOpen changed:', isOpen, 'festivalId:', festivalId)
     if (!isOpen) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = prev }
   }, [isOpen])
 
+  // Fetch user's lists when sheet opens
+  useEffect(() => {
+    if (!isOpen) return
+
+    const fetchLists = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        setSuccessMessage(false)
+        console.log('Fetching lists...')
+        
+        const res = await fetch('http://localhost:5000/api/lists', {
+          credentials: 'include'
+        })
+
+        if (!res.ok) {
+          throw new Error('리스트를 불러오지 못했어요.')
+        }
+
+        const data = await res.json()
+        console.log('Fetched lists:', data)
+        setLists(data)
+      } catch (err) {
+        console.error('Error fetching lists:', err)
+        setError(err.message)
+        setLists([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLists()
+  }, [isOpen])
+
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) onClose()
   }
 
-  const handleAddToList = (listId) => {
-    // TODO: API call to add festival to list
-    onClose()
+  const handleAddToList = async (listId) => {
+    if (!listId || addingToList) return
+
+    try {
+      setAddingToList(listId)
+      const res = await fetch(`http://localhost:5000/api/lists/${listId}/items`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ festivalId })
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.msg || '리스트에 추가하지 못했어요.')
+      }
+
+      setSuccessMessage(true)
+      setTimeout(() => {
+        onClose()
+      }, 1500)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setAddingToList(null)
+    }
   }
 
   const handleNewList = () => {
@@ -61,35 +115,47 @@ function AddToListSheet({ isOpen, onClose, festivalId, festivalImages = [], adde
           </button>
         </div>
 
-        {addedToList && (
+        {successMessage && (
           <p className="add-to-list-added-msg" role="status">
             리스트에 추가되었습니다.
           </p>
         )}
 
+        {error && (
+          <p className="add-to-list-error-msg" role="alert">
+            {error}
+          </p>
+        )}
+
         <div className="add-to-list-content">
-          {DUMMY_LISTS.map((list) => (
-            <button
-              key={list.id}
-              type="button"
-              className="add-to-list-item"
-              onClick={() => handleAddToList(list.id)}
-            >
-              <div className="add-to-list-item-thumb" />
-              <div className="add-to-list-item-body">
-                <span className="add-to-list-item-name">{list.name}</span>
-                <span className="add-to-list-item-meta">
-                  {list.sharedWith ? `${list.sharedWith} · ` : ''}{list.count}개
+          {loading ? (
+            <p className="add-to-list-loading">로딩 중...</p>
+          ) : lists.length === 0 ? (
+            <p className="add-to-list-empty">저장한 리스트가 없어요.</p>
+          ) : (
+            lists.map((list) => (
+              <button
+                key={list._id || list.id}
+                type="button"
+                className="add-to-list-item"
+                disabled={addingToList === (list._id || list.id)}
+                onClick={() => handleAddToList(list._id || list.id)}
+              >
+                <div className="add-to-list-item-thumb" />
+                <div className="add-to-list-item-body">
+                  <span className="add-to-list-item-name">{list.name}</span>
+                  <span className="add-to-list-item-meta">
+                    {list.festivals ? list.festivals.length : 0}개
+                  </span>
+                </div>
+                <span className="add-to-list-item-plus">
+                  {addingToList === (list._id || list.id) ? '추가 중...' : <PlusIcon />}
                 </span>
-              </div>
-              <span className="add-to-list-item-plus">
-                <PlusIcon />
-              </span>
-            </button>
-          ))}
+              </button>
+            ))
+          )}
         </div>
       </div>
-
     </div>
   )
 }

@@ -4,21 +4,6 @@ import StatusBar from '../components/StatusBar'
 import NavigationBar from '../components/NavigationBar'
 import './List.css'
 
-const DUMMY_LISTS = [
-  {
-    id: 1,
-    name: '가고 싶은 여름 축제',
-    coverImage: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800',
-    festivals: [
-      { id: 101, title: '타카야마 여름 축제', image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400' },
-      { id: 102, title: '기온 마츠리', image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400' },
-      { id: 103, title: '텐진 마쓰리', image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400' },
-      { id: 104, title: '아오모리 네부타', image: 'https://images.unsplash.com/photo-1480796927426-f609979314bd?w=400' },
-      { id: 105, title: '삿포로 눈 축제', image: 'https://images.unsplash.com/photo-1526481280693-3bfa7568e0f8?w=400' },
-    ],
-  },
-]
-
 function PlusIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FC4A3A" strokeWidth="2.5" strokeLinecap="round">
@@ -48,7 +33,10 @@ function List() {
         if (isMounted) setLists(Array.isArray(data) ? data : [])
       } catch (e) {
         if (e.name === 'AbortError') return
-        if (isMounted) setLists(DUMMY_LISTS)
+        if (isMounted) {
+          console.error('Failed to fetch lists:', e)
+          setLists([])
+        }
       } finally {
         if (isMounted) setLoading(false)
       }
@@ -95,8 +83,8 @@ function List() {
 
               {list.festivals && list.festivals.length > 0 && (
                 <div className="list-card-previews">
-                  {list.festivals.slice(0, 3).map((fest) => (
-                    <div key={fest.id} className="list-card-preview">
+                  {list.festivals.slice(0, 3).map((fest, idx) => (
+                    <div key={fest._id || fest.id || `fest-${idx}`} className="list-card-preview">
                       <div className="list-card-preview-img-wrap">
                         {fest.image ? (
                           <img src={fest.image} alt={fest.title} />

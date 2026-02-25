@@ -83,15 +83,23 @@ function ListEdit() {
 
   useEffect(() => {
     return () => {
-      if (newImagePreview) URL.revokeObjectURL(newImagePreview)
+      if (newImagePreview && newImagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(newImagePreview)
+      }
     }
   }, [newImagePreview])
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0]
     if (file && file.type.startsWith('image/')) {
-      setNewImageFile(file)
-      setNewImagePreview(URL.createObjectURL(file))
+      const reader = new FileReader()
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setNewImageFile(file)
+          setNewImagePreview(reader.result)
+        }
+      }
+      reader.readAsDataURL(file)
     }
     e.target.value = ''
   }
@@ -100,14 +108,20 @@ function ListEdit() {
     if (!listName.trim()) return
 
     try {
+      const payload = {
+        name: listName.trim(),
+        isPublic,
+      }
+      const nextCoverImage = newImagePreview || coverImage
+      if (nextCoverImage && !nextCoverImage.startsWith('blob:')) {
+        payload.coverImage = nextCoverImage
+      }
+
       await fetch(`http://localhost:5000/api/lists/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          name: listName.trim(),
-          isPublic,
-        }),
+        body: JSON.stringify(payload),
       })
     } catch {
       // ignore
