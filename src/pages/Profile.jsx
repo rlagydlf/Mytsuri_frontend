@@ -149,7 +149,7 @@ function Profile() {
 
         if (isMounted) {
           setUser({
-            name: userData.nickname || '사용자',
+            name: userData.name || '사용자',
             avatar: userData.profileImg 
               ? (userData.profileImg.startsWith('http') 
                 ? userData.profileImg 

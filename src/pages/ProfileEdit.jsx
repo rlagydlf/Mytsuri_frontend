@@ -57,7 +57,12 @@ function ProfileEdit() {
           setAge(data.age || '')
           // 기존 프로필 이미지 설정
           if (data.profileImg) {
-            setAvatarPreview(`http://localhost:5000${data.profileImg}`)
+            const fullImageUrl = data.profileImg.startsWith('http')
+              ? data.profileImg
+              : `http://localhost:5000${data.profileImg}`
+            setAvatarPreview(fullImageUrl)
+          } else {
+            setAvatarPreview(`http://localhost:5000/uploads/profiles/default.svg`)
           }
         }
       } catch (err) {
@@ -93,16 +98,24 @@ function ProfileEdit() {
       if (age.trim()) formData.append('age', age.trim())
       if (avatar) formData.append('profileImage', avatar)
 
-      await fetch('http://localhost:5000/api/users/me', {
+      const res = await fetch('http://localhost:5000/api/users/me', {
         method: 'PUT',
         credentials: 'include',
         body: formData,
       })
+      
+      if (!res.ok) {
+        const errorData = await res.json()
+        console.error('프로필 저장 실패:', errorData)
+        return
+      }
+      
+      const data = await res.json()
+      console.log('프로필 저장 성공:', data)
+      navigate('/profile')
     } catch (err) {
       console.error('프로필 저장 오류:', err)
     }
-
-    navigate('/profile')
   }
 
   return (
@@ -120,9 +133,11 @@ function ProfileEdit() {
       <main className="ped-body">
         <div className="ped-avatar-wrap">
           <div className="ped-avatar">
-            {avatarPreview ? (
-              <img src={avatarPreview} alt="" className="ped-avatar-img" />
-            ) : null}
+            <img 
+              src={avatarPreview || '/uploads/profiles/default.svg'} 
+              alt="" 
+              className="ped-avatar-img" 
+            />
           </div>
           <input
             ref={fileInputRef}
