@@ -93,18 +93,25 @@ function ListEditFestivals() {
     setModalOpen(false)
 
     try {
-      await fetch(`http://localhost:5000/api/lists/${id}/items/${pendingDeleteId}`, {
+      const res = await fetch(`http://localhost:5000/api/lists/${id}/items/${pendingDeleteId}`, {
         method: 'DELETE',
         credentials: 'include',
       })
-    } catch {
-      // ignore
-    }
 
-    setRemoved((prev) => new Set(prev).add(pendingDeleteId))
-    setPendingDeleteId(null)
-    setToastMsg('축제가 삭제되었어요')
-    setToastVisible(true)
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.error || '축제 삭제에 실패했어요')
+      }
+
+      setRemoved((prev) => new Set(prev).add(pendingDeleteId))
+      setPendingDeleteId(null)
+      setToastMsg('축제가 삭제되었어요')
+      setToastVisible(true)
+    } catch (error) {
+      setPendingDeleteId(null)
+      setToastMsg(error.message || '축제 삭제에 실패했어요')
+      setToastVisible(true)
+    }
   }
 
   const handleCancel = () => {

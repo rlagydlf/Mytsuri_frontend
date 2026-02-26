@@ -156,7 +156,7 @@ function ReviewWrite() {
       <div className="review-write-top-fixed">
         <StatusBar />
         <header className="review-write-header">
-          <button type="button" className="review-write-header-btn" onClick={() => navigate(`/festival/${id}`, { state: location.state })} aria-label="뒤로">
+          <button type="button" className="review-write-header-btn" onClick={() => navigate('/')} aria-label="뒤로">
             <BackArrowIcon />
           </button>
           <button type="button" className="review-write-header-btn" onClick={() => navigate(`/festival/${id}`, { state: location.state })} aria-label="닫기">
