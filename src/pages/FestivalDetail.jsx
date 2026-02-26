@@ -247,25 +247,92 @@ function FestivalDetail() {
   }, [location.state?.openAddToList, location.pathname, navigate])
 
   useEffect(() => {
+    // 리뷰 작성 완료 후 리뷰 탭으로 이동하고 리뷰 목록 새로고침
+    if (location.state?.reviewWritten) {
+      console.log('리뷰 작성 완료됨 - 리뷰 목록 새로고침')
+      setActiveTab('리뷰')
+      // 리뷰 데이터 새로고침
+      const fetchReviews = async () => {
+        if (!id) return
+        try {
+          setReviewsLoading(true)
+          console.log(`리뷰 로드 시작: /api/festivals/${id}/reviews`)
+          const res = await fetch(`http://localhost:5000/api/festivals/${id}/reviews`, {
+            credentials: 'include'
+          })
+          console.log('리뷰 응답 상태:', res.status)
+          if (res.ok) {
+            const reviewsData = await res.json()
+            console.log('로드된 리뷰:', reviewsData)
+            setReviews(reviewsData)
+          } else {
+            console.error('리뷰 로드 실패:', res.status)
+          }
+        } catch (err) {
+          console.error('리뷰 로드 오류:', err)
+        } finally {
+          setReviewsLoading(false)
+        }
+      }
+      fetchReviews()
+      navigate(location.pathname, { replace: true, state: { from: location.state?.from } })
+    }
+  }, [location.state?.reviewWritten, location.pathname, id, navigate])
+
+  useEffect(() => {
     const fetchReviews = async () => {
       if (!id) return
       try {
         setReviewsLoading(true)
+        console.log(`초기 리뷰 로드: /api/festivals/${id}/reviews`)
         const res = await fetch(`http://localhost:5000/api/festivals/${id}/reviews`, {
           credentials: 'include'
         })
+        console.log('초기 리뷰 응답 상태:', res.status)
         if (res.ok) {
           const reviewsData = await res.json()
+          console.log('초기 로드 리뷰:', reviewsData)
           setReviews(reviewsData)
+        } else {
+          console.error('초기 리뷰 로드 실패:', res.status)
         }
       } catch (err) {
-        console.error('Failed to fetch reviews:', err)
+        console.error('초기 리뷰 로드 오류:', err)
       } finally {
         setReviewsLoading(false)
       }
     }
     fetchReviews()
   }, [id])
+
+  // activeTab이 '리뷰'로 변경될 때 리뷰 새로고침
+  useEffect(() => {
+    if (activeTab !== '리뷰' || !id) return
+    
+    const fetchReviews = async () => {
+      try {
+        setReviewsLoading(true)
+        console.log(`리뷰 탭 선택 - 리뷰 새로고침: /api/festivals/${id}/reviews`)
+        const res = await fetch(`http://localhost:5000/api/festivals/${id}/reviews`, {
+          credentials: 'include'
+        })
+        console.log('리뷰 탭 클릭 시 응답 상태:', res.status)
+        if (res.ok) {
+          const reviewsData = await res.json()
+          console.log('리뷰 탭 클릭 시 로드 리뷰:', reviewsData)
+          setReviews(reviewsData)
+        } else {
+          console.error('리뷰 탭 클릭 시 로드 실패:', res.status)
+        }
+      } catch (err) {
+        console.error('리뷰 탭 클릭 시 로드 오류:', err)
+      } finally {
+        setReviewsLoading(false)
+      }
+    }
+    
+    fetchReviews()
+  }, [activeTab, id])
 
   if (loading) {
     return (
@@ -342,6 +409,10 @@ function FestivalDetail() {
               <img src="/assets/star_icon.svg" alt="" aria-hidden />
               {data.rating} <span className="festival-detail-review-count">({data.reviewCount})</span>
             </span>
+            <span className="festival-detail-bookmark">
+              <img src="/assets/list_icon.svg" alt="" aria-hidden />
+              {data.bookmarkCount ?? 0}
+            </span>
           </div>
         </section>
 
@@ -398,6 +469,7 @@ function FestivalDetail() {
 
         {activeTab === '리뷰' && (
           <div className="festival-detail-tab-content festival-detail-reviews">
+            {console.log('리뷰 탭 렌더 - reviewsLoading:', reviewsLoading, 'reviews.length:', reviews.length, 'reviews:', reviews)}
             <div className="review-toolbar">
               <button
                 type="button"
@@ -420,19 +492,19 @@ function FestivalDetail() {
             ) : reviews.length > 0 ? (
               <div className="review-list">
                 {(reviewSortDesc ? [...reviews] : [...reviews].reverse()).map((review, idx, arr) => (
-                  <div key={review.id} className="review-item">
+                  <div key={review.id || review._id || idx} className="review-item">
                     <div className="review-card">
                       <div className="review-card-top">
-                        <span className="review-card-name">{review.userName}</span>
-                        <span className="review-card-date">{review.date}</span>
+                        <span className="review-card-name">{review.userName || review.name || '익명'}</span>
+                        <span className="review-card-date">{review.date || review.createdAt || ''}</span>
                       </div>
                       <div className="review-card-rating">
                         <span className="review-card-stars">
                           {[1, 2, 3, 4, 5].map((s) => (
-                            <ReviewStarIcon key={s} filled={s <= review.rating} />
+                            <ReviewStarIcon key={s} filled={s <= (review.rating || 0)} />
                           ))}
                         </span>
-                        <span className="review-card-score">{review.rating.toFixed(1)}</span>
+                        <span className="review-card-score">{(review.rating || 0).toFixed(1)}</span>
                       </div>
                       {review.tags && review.tags.length > 0 && (
                         <div className="review-card-tags">
@@ -441,7 +513,7 @@ function FestivalDetail() {
                           ))}
                         </div>
                       )}
-                      <p className="review-card-body">{review.body}</p>
+                      <p className="review-card-body">{review.body || review.text || ''}</p>
                       {review.images && review.images.length > 0 && (
                         <div className="review-card-images">
                           {review.images.map((img, imgIdx) => (
@@ -456,7 +528,7 @@ function FestivalDetail() {
                 ))}
               </div>
             ) : (
-              <p className="festival-detail-empty">리뷰가 없습니다.</p>
+              <p className="festival-detail-empty">아직 리뷰가 없습니다. 첫 번째 리뷰를 작성해보세요!</p>
             )}
           </div>
         )}
@@ -490,6 +562,29 @@ function FestivalDetail() {
         festivalId={id}
         festivalImages={data?.images || []}
         addedToList={addedToList}
+        onAddToListSuccess={() => {
+          // 축제 데이터 새로고침 (북마크 수 업데이트)
+          if (id) {
+            const controller = new AbortController()
+            fetch(`http://localhost:5000/api/festivals/${id}`, {
+              signal: controller.signal,
+              credentials: 'include'
+            })
+              .then(res => res.ok ? res.json() : null)
+              .then(festivalData => {
+                if (festivalData) {
+                  setData({
+                    ...festivalData,
+                    images: [festivalData.image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800'],
+                    photos: festivalData.photos && festivalData.photos.length > 0
+                      ? festivalData.photos
+                      : [festivalData.image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400'],
+                  })
+                }
+              })
+              .catch(err => console.error('축제 데이터 갱신 실패:', err))
+          }
+        }}
       />
     </div>
   )

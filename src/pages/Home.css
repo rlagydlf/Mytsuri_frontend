@@ -55,6 +55,48 @@
   align-items: center;
   justify-content: center;
 }
+.home-header .notification-btn {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #FC4A3A;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #000;
+}
+.home-header .notification-btn {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #FC4A3A;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #000;
+}
 
 .home-main {
   padding: 0 20px 20px;

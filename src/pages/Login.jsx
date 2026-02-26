@@ -66,9 +66,40 @@ function Login() {
       // 쿠키에 JWT가 자동으로 저장되므로 별도 저장 불필요
       console.log('로그인 성공:', data)
       
-      // 로그인 성공 - 온보딩(선택) 페이지로 이동
-      window.history.replaceState(null, '', '/onboarding')
-      window.location.href = '/onboarding'
+      // 사용자 데이터 확인 (온보딩 완료 여부)
+      try {
+        const userRes = await fetch('http://localhost:5000/api/users/me', {
+          method: 'GET',
+          credentials: 'include'
+        })
+        
+        if (userRes.ok) {
+          const userData = await userRes.json()
+          console.log('사용자 데이터:', userData)
+          
+          // 온보딩 완료 여부 확인 (name이 있으면 프로필 정보가 저장된 것으로 판단)
+          if (userData.onboardingCompleted || userData.name || userData.region) {
+            // 온보딩 완료 - 홈으로 이동
+            console.log('온보딩 완료된 사용자 - 홈으로 이동')
+            window.history.replaceState(null, '', '/')
+            window.location.href = '/'
+          } else {
+            // 온보딩 미완료 - 온보딩으로 이동
+            console.log('온보딩 미완료 - 온보딩으로 이동')
+            window.history.replaceState(null, '', '/onboarding')
+            window.location.href = '/onboarding'
+          }
+        } else {
+          // 사용자 데이터 조회 실패 - 안전하게 온보딩으로 이동
+          window.history.replaceState(null, '', '/onboarding')
+          window.location.href = '/onboarding'
+        }
+      } catch (err) {
+        console.error('사용자 데이터 조회 오류:', err)
+        // 에러 발생시 안전하게 온보딩으로 이동
+        window.history.replaceState(null, '', '/onboarding')
+        window.location.href = '/onboarding'
+      }
     } catch (error) {
       console.error('로그인 오류:', error)
       setErrorMessage('서버와 통신할 수 없습니다.')

@@ -421,3 +421,155 @@
   transform: translateX(-50%) translateY(0);
   pointer-events: auto;
 }
+
+/* 새로운 초대 페이지 스타일 */
+.li-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: #070707;
+  border-bottom: 1px solid #212121;
+}
+
+.li-back-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #F5F5F5;
+  margin-right: 12px;
+}
+
+.li-header-title {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  color: #F5F5F5;
+  margin: 0;
+}
+
+.li-main {
+  padding: 24px 20px;
+}
+
+.li-section {
+  margin-bottom: 32px;
+}
+
+.li-section-title {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #F5F5F5;
+  margin: 0 0 16px 0;
+}
+
+.li-invite-form {
+  display: flex;
+  gap: 8px;
+}
+
+.li-email-input {
+  flex: 1;
+  height: 48px;
+  padding: 0 16px;
+  background: #212121;
+  border: 1px solid #424242;
+  border-radius: 8px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  color: #F5F5F5;
+  outline: none;
+}
+
+.li-email-input::placeholder {
+  color: #757575;
+}
+
+.li-email-input:focus {
+  border-color: #FC4A3A;
+}
+
+.li-invite-btn {
+  height: 48px;
+  padding: 0 24px;
+  background: #FC4A3A;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #FAFAFA;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.li-invite-btn:disabled {
+  background: #424242;
+  color: #757575;
+  cursor: not-allowed;
+}
+
+.li-collaborator-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.li-collaborator-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #212121;
+  border-radius: 8px;
+}
+
+.li-collaborator-info {
+  flex: 1;
+}
+
+.li-collaborator-name {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #F5F5F5;
+  margin: 0 0 4px 0;
+}
+
+.li-collaborator-role {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  color: #9E9E9E;
+  margin: 0;
+}
+
+.li-remove-btn {
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid #757575;
+  border-radius: 6px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  color: #F5F5F5;
+  cursor: pointer;
+}
+
+.li-remove-btn:hover {
+  border-color: #FC4A3A;
+  color: #FC4A3A;
+}
+
+.li-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 14px 20px;
+  background: #9E9E9E;
+  border-radius: 8px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  color: #FAFAFA;
+  z-index: 100000;
+}

@@ -48,12 +48,16 @@ function PlusIcon() {
 
 function ReviewWrite() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { id } = useParams()
 
   const [rating, setRating] = useState(0)
   const [selectedTags, setSelectedTags] = useState([])
   const [reviewText, setReviewText] = useState('')
   const [selectedImages, setSelectedImages] = useState([])
+  const [fileObjects, setFileObjects] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const fileInputRef = useRef(null)
 
   const toggleTag = (tag) => {
@@ -68,7 +72,9 @@ function ReviewWrite() {
     const file = e.target.files?.[0]
     if (file && file.type.startsWith('image/')) {
       if (selectedImages.length < 4) {
-        setSelectedImages((prev) => [...prev, URL.createObjectURL(file)])
+        const url = URL.createObjectURL(file)
+        setSelectedImages((prev) => [...prev, url])
+        setFileObjects((prev) => [...prev, file])
       }
     }
     e.target.value = ''
@@ -79,14 +85,70 @@ function ReviewWrite() {
       URL.revokeObjectURL(prev[index])
       return prev.filter((_, i) => i !== index)
     })
+    setFileObjects((prev) => prev.filter((_, i) => i !== index))
   }
 
   const canSubmit = rating > 0
 
-  const handleSubmit = () => {
-    if (!canSubmit) return
-    // TODO: API call to submit review
-    navigate(`/festival/${id}`, { state: location.state })
+  const handleSubmit = async () => {
+    if (!canSubmit || loading) return
+
+    setLoading(true)
+    setError('')
+
+    try {
+      // 사진을 base64로 변환
+      const images = []
+      for (const file of fileObjects) {
+        const base64 = await new Promise((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result)
+          reader.readAsDataURL(file)
+        })
+        images.push(base64)
+      }
+
+      // 리뷰 데이터 생성
+      const reviewData = {
+        rating,
+        tags: selectedTags,
+        body: reviewText.trim(),
+        images
+      }
+
+      console.log('리뷰 데이터:', reviewData)
+
+      // 서버에 리뷰 전송
+      const res = await fetch(`http://localhost:5000/api/festivals/${id}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(reviewData)
+      })
+
+      console.log('서버 응답 상태:', res.status, res.statusText)
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        console.error('서버 에러:', errData)
+        throw new Error(errData.msg || `리뷰 작성에 실패했습니다. (상태: ${res.status})`)
+      }
+
+      const result = await res.json()
+      console.log('리뷰 작성 성공:', result)
+
+      // 성공 - 축제 상세 페이지로 이동 (리뷰 탭으로)
+      navigate(`/festival/${id}`, { 
+        state: { from: 'review', reviewWritten: true }
+      })
+    } catch (err) {
+      console.error('리뷰 작성 오류:', err)
+      setError(err.message || '리뷰를 작성하지 못했습니다.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -179,13 +241,19 @@ function ReviewWrite() {
           </div>
         </section>
 
+        {error && (
+          <div className="review-write-error" role="alert">
+            {error}
+          </div>
+        )}
+
         <button
           type="button"
           className={`review-write-submit ${canSubmit ? 'review-write-submit--active' : ''}`}
           onClick={handleSubmit}
-          disabled={!canSubmit}
+          disabled={!canSubmit || loading}
         >
-          완료
+          {loading ? '작성 중...' : '완료'}
         </button>
       </main>
     </div>

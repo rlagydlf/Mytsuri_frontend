@@ -30,7 +30,12 @@ function List() {
         })
         if (!res.ok) throw new Error()
         const data = await res.json()
-        if (isMounted) setLists(Array.isArray(data) ? data : [])
+        const sortedLists = (Array.isArray(data) ? data : []).sort((a, b) => {
+          const dateA = new Date(a.createdAt || a.updatedAt || 0)
+          const dateB = new Date(b.createdAt || b.updatedAt || 0)
+          return dateB - dateA
+        })
+        if (isMounted) setLists(sortedLists)
       } catch (e) {
         if (e.name === 'AbortError') return
         if (isMounted) {

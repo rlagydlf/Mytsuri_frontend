@@ -59,6 +59,15 @@ function StarEmpty() {
   )
 }
 
+function DefaultAvatarIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9E9E9E" strokeWidth="1.5">
+      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  )
+}
+
 const DUMMY_USER = {
   name: '홍길동',
   bio: '축제와 여행을 좋아해요이런소개',
@@ -95,16 +104,33 @@ function Profile() {
       try {
         setLoading(true)
         // 사용자 정보 조회
-        const userRes = await fetch('http://localhost:5000/api/users/me', {
+        let userRes = await fetch('http://localhost:5000/api/users/me', {
           credentials: 'include',
           signal: controller.signal,
         })
         
-        if (!userRes.ok) {
-          if (userRes.status === 401) {
+        // 401이 나면 토큰 갱신 시도
+        if (userRes.status === 401) {
+          const refreshRes = await fetch('http://localhost:5000/api/auth/refresh', {
+            method: 'POST',
+            credentials: 'include',
+            signal: controller.signal,
+          })
+          
+          if (refreshRes.ok) {
+            // 토큰 갱신 성공하면 다시 요청
+            userRes = await fetch('http://localhost:5000/api/users/me', {
+              credentials: 'include',
+              signal: controller.signal,
+            })
+          } else {
+            // 토큰 갱신 실패하면 로그인 페이지로
             navigate('/login')
             return
           }
+        }
+        
+        if (!userRes.ok) {
           throw new Error('사용자 정보 조회 실패')
         }
         
@@ -125,7 +151,9 @@ function Profile() {
           setUser({
             name: userData.nickname || '사용자',
             avatar: userData.profileImg 
-              ? `http://localhost:5000${userData.profileImg}`
+              ? (userData.profileImg.startsWith('http') 
+                ? userData.profileImg 
+                : `http://localhost:5000${userData.profileImg}`)
               : `http://localhost:5000/uploads/profiles/default.svg`,
           })
           setReviews(reviewsData.map((r) => ({
@@ -156,11 +184,17 @@ function Profile() {
     return () => { isMounted = false; controller.abort() }
   }, [])
 
-  const handleLogout = () => {
-    // 로그아웃 API 호출 (백그라운드)
-    fetch('http://localhost:5000/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {})
-    // 즉시 로그인 페이지로 이동
-    navigate('/login')
+  const handleLogout = async () => {
+    try {
+      // 로그아웃 API 호출 (쿠키 삭제)
+      await fetch('http://localhost:5000/api/auth/logout', { method: 'POST', credentials: 'include' })
+    } catch (error) {
+      console.error('로그아웃 실패:', error)
+    }
+    // 로그아웃 이벤트 발생 (App.jsx의 authStatus 업데이트)
+    window.dispatchEvent(new Event('logout'))
+    // 로그인 페이지로 이동
+    navigate('/login', { replace: true })
   }
 
   const renderStars = (rating) => {
@@ -205,9 +239,7 @@ function Profile() {
         <section className="pf-user-section">
           <div className="pf-user-left">
             <div className="pf-avatar">
-              {user.avatar ? (
-                <img src={user.avatar} alt="" className="pf-avatar-img" />
-              ) : null}
+              <img src={user.avatar} alt="" className="pf-avatar-img" />
             </div>
             <div className="pf-user-info">
               <p className="pf-user-name">{user.name}</p>

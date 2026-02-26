@@ -1,11 +1,7 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import StatusBar from '../components/StatusBar'
 import './Notification.css'
-
-const NOTIFICATIONS = [
-  { id: 1, type: 'list', title: '리스트', body: '친구가 새로운 축제를 추가했어요.', time: '2월 20일' },
-  { id: 2, type: 'festival', title: '내 축제', body: '내가 찜한 구본오도리가 곧 개최돼요!', time: '1월 30일' },
-]
 
 function BackIcon() {
   return (
@@ -23,8 +19,127 @@ function CheckIcon() {
   )
 }
 
+function TrashIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF6B35" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+    </svg>
+  )
+}
+
+function ListIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF6B35" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12h18M3 6h18M3 18h18" />
+    </svg>
+  )
+}
+
 function Notification() {
   const navigate = useNavigate()
+  const [notifications, setNotifications] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [actionLoadingId, setActionLoadingId] = useState(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    const fetchNotifications = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch('http://localhost:5000/api/notifications', {
+          credentials: 'include'
+        })
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}))
+          throw new Error(errorData.error || '알림을 불러오지 못했습니다')
+        }
+
+        const data = await res.json()
+        if (isMounted) {
+          setNotifications(Array.isArray(data) ? data : [])
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err.message || '알림을 불러오지 못했습니다')
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchNotifications()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const formatDate = (value) => {
+    if (!value) return ''
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return ''
+    return date.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+  }
+
+  const handleNotificationClick = async (notificationId) => {
+    if (!notificationId) return
+    try {
+      const res = await fetch(`http://localhost:5000/api/notifications/${notificationId}/read`, {
+        method: 'PATCH',
+        credentials: 'include'
+      })
+
+      if (res.ok) {
+        // 알림을 제거하지 않고 isRead 상태 업데이트
+        setNotifications((prev) => prev.map((item) => {
+          const itemId = item._id || item.id
+          if (itemId === notificationId) {
+            return { ...item, isRead: true }
+          }
+          return item
+        }))
+      }
+    } catch (err) {
+      console.error('알림 읽음 처리 실패:', err)
+    }
+  }
+
+  const handleInviteAction = async (notificationId, action) => {
+    if (!notificationId || actionLoadingId) return
+    setActionLoadingId(notificationId)
+    setError('')
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/notifications/${notificationId}/${action}`, {
+        method: 'POST',
+        credentials: 'include'
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.error || '요청에 실패했습니다')
+      }
+
+      // 알림을 제거하지 않고 isRead 상태 업데이트
+      setNotifications((prev) => prev.map((item) => {
+        const itemId = item._id || item.id
+        if (itemId === notificationId) {
+          return { ...item, isRead: true }
+        }
+        return item
+      }))
+    } catch (err) {
+      setError(err.message || '요청에 실패했습니다')
+    } finally {
+      setActionLoadingId(null)
+    }
+  }
 
   return (
     <div className="notification-page">
@@ -39,22 +154,70 @@ function Notification() {
       </div>
 
       <main className="notification-main">
-        {NOTIFICATIONS.length > 0 ? (
+        {error && <p className="notification-error">{error}</p>}
+        {loading ? (
+          <div className="notification-empty">
+            <p className="notification-empty-text">알림을 불러오는 중입니다</p>
+          </div>
+        ) : notifications.length > 0 ? (
           <ul className="notification-list">
-            {NOTIFICATIONS.map((item) => (
-              <li key={item.id} className="notification-item">
-                <span className={`notification-item-icon ${item.type === 'list' ? 'notification-item-icon--list' : ''}`} aria-hidden>
-                  {item.type === 'list' ? null : <CheckIcon />}
+            {notifications.map((item) => {
+              const notificationId = item._id || item.id
+              const isInvite = item.type === 'list_invite'
+              const isFestivalUpcoming = item.type === 'festival_upcoming'
+              const isListFestivalAdded = item.type === 'list_festival_added'
+              const isListFestivalRemoved = item.type === 'list_festival_removed'
+
+              return (
+              <li
+                key={notificationId}
+                className="notification-item"
+                onClick={() => !isInvite && handleNotificationClick(notificationId)}
+                style={{
+                  cursor: isInvite ? 'default' : 'pointer',
+                  opacity: item.isRead ? 0.5 : 1,
+                  transition: 'opacity 0.3s ease'
+                }}
+              >
+                <span 
+                  className={`notification-item-icon ${
+                    isInvite ? 'notification-item-icon--list' : 
+                    isListFestivalAdded ? 'notification-item-icon--list-add' :
+                    isListFestivalRemoved ? 'notification-item-icon--list-remove' : ''
+                  }`} 
+                  aria-hidden
+                >
+                  {isInvite ? null : isListFestivalAdded ? <ListIcon /> : isListFestivalRemoved ? <TrashIcon /> : <CheckIcon />}
                 </span>
                 <div className="notification-item-body">
                   <div className="notification-item-row">
-                    <h3 className="notification-item-title">{item.title}</h3>
-                    <span className="notification-item-time">{item.time}</span>
+                    <h3 className="notification-item-title">{item.title || '알림'}</h3>
+                    <span className="notification-item-time">{formatDate(item.created_at || item.updated_at)}</span>
                   </div>
-                  <p className="notification-item-text">{item.body}</p>
+                  <p className="notification-item-text">{item.message}</p>
+                  {isInvite && (
+                    <div className="notification-item-actions">
+                      <button
+                        type="button"
+                        className="notification-action-btn"
+                        onClick={() => handleInviteAction(notificationId, 'accept')}
+                        disabled={actionLoadingId === notificationId}
+                      >
+                        수락
+                      </button>
+                      <button
+                        type="button"
+                        className="notification-action-btn notification-action-btn--ghost"
+                        onClick={() => handleInviteAction(notificationId, 'reject')}
+                        disabled={actionLoadingId === notificationId}
+                      >
+                        거절
+                      </button>
+                    </div>
+                  )}
                 </div>
               </li>
-            ))}
+            )})}
           </ul>
         ) : (
           <div className="notification-empty">

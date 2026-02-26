@@ -58,6 +58,7 @@ function Home() {
   const [festivals, setFestivals] = useState(EMPTY_FESTIVALS)
   const [publicLists, setPublicLists] = useState([])
   const [loadError, setLoadError] = useState('')
+  const [unreadCount, setUnreadCount] = useState(0)
   const touchStartX = useRef(0)
 
   useEffect(() => {
@@ -125,6 +126,32 @@ function Home() {
     return () => { isMounted = false; controller.abort() }
   }, [])
 
+  // 읽지 않은 알림 개수 가져오기
+  useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+    
+    const fetchUnreadCount = () => {
+      fetch('http://localhost:5000/api/notifications/unread-count', { 
+        signal: controller.signal, 
+        credentials: 'include' 
+      })
+        .then((res) => res.ok ? res.json() : { count: 0 })
+        .then((data) => { if (isMounted) setUnreadCount(data.count || 0) })
+        .catch(() => {})
+    }
+
+    fetchUnreadCount()
+    // 30초마다 체크
+    const interval = setInterval(fetchUnreadCount, 30000)
+    
+    return () => { 
+      isMounted = false
+      controller.abort()
+      clearInterval(interval)
+    }
+  }, [])
+
   useEffect(() => {
     if (!banners.length) {
       return undefined
@@ -176,7 +203,10 @@ function Home() {
           </Link>
           <div className="home-header-actions">
             <button type="button" className="icon-btn" aria-label="검색" onClick={() => navigate('/search')}><SearchIcon /></button>
-            <button type="button" className="icon-btn" aria-label="알림" onClick={() => navigate('/notifications')}><NotificationIcon /></button>
+            <button type="button" className="icon-btn notification-btn" aria-label="알림" onClick={() => navigate('/notifications')}>
+              <NotificationIcon />
+              {unreadCount > 0 && <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+            </button>
           </div>
         </header>
       </div>

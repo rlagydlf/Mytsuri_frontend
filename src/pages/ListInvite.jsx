@@ -62,48 +62,54 @@ function ListInvite() {
 
   const [listData, setListData] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [joined, setJoined] = useState(false)
-  const [modalOpen, setModalOpen] = useState(false)
+  const [email, setEmail] = useState('')
+  const [inviting, setInviting] = useState(false)
   const [toastVisible, setToastVisible] = useState(false)
-  const [moreOpen, setMoreOpen] = useState(false)
-  const [morePos, setMorePos] = useState({ top: 0, right: 0 })
-  const moreBtnRef = useRef(null)
-  const moreRef = useRef(null)
-  const dropdownRef = useRef(null)
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (
-        moreRef.current && !moreRef.current.contains(e.target) &&
-        dropdownRef.current && !dropdownRef.current.contains(e.target)
-      ) setMoreOpen(false)
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  const [toastMsg, setToastMsg] = useState('')
+  const [currentUserId, setCurrentUserId] = useState(null)
+  const [collaborators, setCollaborators] = useState([])
 
   useEffect(() => {
     let isMounted = true
     const controller = new AbortController()
 
-    const fetchList = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/lists/${id}/invite`, {
+        // 사용자 정보 조회
+        const userRes = await fetch('http://localhost:5000/api/users/me', {
+          credentials: 'include',
+          signal: controller.signal,
+        })
+        let userId = null
+        if (userRes.ok) {
+          const userData = await userRes.json()
+          userId = userData.userId
+          if (isMounted) setCurrentUserId(userId)
+        }
+
+        // 리스트 조회
+        const res = await fetch(`http://localhost:5000/api/lists/${id}`, {
           credentials: 'include',
           signal: controller.signal,
         })
         if (!res.ok) throw new Error()
         const data = await res.json()
-        if (isMounted) setListData(data)
+        if (isMounted) {
+          setListData(data)
+          setCollaborators(data.collaborators || [])
+        }
       } catch (e) {
         if (e.name === 'AbortError') return
-        if (isMounted) setListData(DUMMY_LIST)
+        if (isMounted) {
+          console.error('Failed to fetch:', e)
+          setListData(null)
+        }
       } finally {
         if (isMounted) setLoading(false)
       }
     }
 
-    fetchList()
+    fetchData()
     return () => { isMounted = false; controller.abort() }
   }, [id])
 
@@ -113,30 +119,69 @@ function ListInvite() {
     return () => clearTimeout(timer)
   }, [toastVisible])
 
-  const handleJoinConfirm = async () => {
-    setModalOpen(false)
+  const handleInvite = async () => {
+    if (!email.trim()) {
+      setToastMsg('이메일을 입력해주세요')
+      setToastVisible(true)
+      return
+    }
+
     try {
-      await fetch(`http://localhost:5000/api/lists/${id}/join`, {
+      setInviting(true)
+      const res = await fetch(`http://localhost:5000/api/lists/${id}/collaborators`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: email.trim() })
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || '초대 실패')
+      }
+
+      const result = await res.json()
+      setToastMsg('초대를 보냈습니다')
+      setToastVisible(true)
+      setEmail('')
+      
+      // 협력자 목록 다시 불러오기
+      const listRes = await fetch(`http://localhost:5000/api/lists/${id}`, {
         credentials: 'include',
       })
-    } catch {
-      // ignore
+      if (listRes.ok) {
+        const data = await listRes.json()
+        setCollaborators(data.collaborators || [])
+      }
+    } catch (err) {
+      setToastMsg(err.message || '초대에 실패했습니다')
+      setToastVisible(true)
+    } finally {
+      setInviting(false)
     }
-    setJoined(true)
-    setToastVisible(true)
   }
 
-  const handleLeave = async () => {
+  const handleRemoveCollaborator = async (collaboratorId) => {
     try {
-      await fetch(`http://localhost:5000/api/lists/${id}/leave`, {
-        method: 'POST',
+      const res = await fetch(`http://localhost:5000/api/lists/${id}/collaborators/${collaboratorId}`, {
+        method: 'DELETE',
         credentials: 'include',
       })
-    } catch {
-      // ignore
+
+      if (!res.ok) throw new Error()
+
+      setToastMsg('협력자를 제거했습니다')
+      setToastVisible(true)
+      
+      // 협력자 목록 업데이트
+      setCollaborators(collaborators.filter(c => {
+        const userId = c.user_id?._id || c.user_id
+        return userId !== collaboratorId
+      }))
+    } catch (err) {
+      setToastMsg('협력자 제거에 실패했습니다')
+      setToastVisible(true)
     }
-    setJoined(false)
   }
 
   if (loading) {
@@ -152,117 +197,72 @@ function ListInvite() {
     <div className="li-page">
       <StatusBar />
 
-      <div className="li-cover">
-        <div className="li-cover-img-wrap">
-          <img src={listData?.coverImage || ''} alt="" className="li-cover-img" />
-          <div className="li-cover-gradient" />
-        </div>
+      <header className="li-header">
+        <button type="button" className="li-back-btn" onClick={() => navigate(-1)} aria-label="뒤로">
+          <LeftArrowIcon />
+        </button>
+        <h1 className="li-header-title">친구 초대</h1>
+      </header>
 
-        <header className="li-cover-header">
-          <button type="button" className="li-cover-btn" onClick={() => navigate(-1)} aria-label="뒤로">
-            <LeftArrowIcon />
-          </button>
-          <div className="li-cover-header-right" ref={moreRef}>
-            <button ref={moreBtnRef} type="button" className="li-cover-btn" aria-label="더보기" onClick={() => {
-              if (!moreOpen && moreBtnRef.current) {
-                const r = moreBtnRef.current.getBoundingClientRect()
-                setMorePos({ top: r.bottom + 8, right: window.innerWidth - r.right })
-              }
-              setMoreOpen((p) => !p)
-            }}>
-              <MoreIcon />
-            </button>
-          </div>
-        </header>
-
-        <div className="li-cover-bottom">
-          <div className="li-cover-info">
-            <p className="li-cover-name">{listData?.name}</p>
-            <div className="li-cover-meta">
-              <span className="li-cover-meta-text">{listData?.ownerName} 님</span>
-              <span className="li-cover-meta-dot" />
-              <span className="li-cover-meta-text">{listData?.festivals?.length || 0}개의 축제</span>
-            </div>
-          </div>
-
-          {!joined ? (
-            <button type="button" className="li-join-btn" onClick={() => setModalOpen(true)}>
-              참여
-              <PlusIcon />
-            </button>
-          ) : (
-            <button type="button" className="li-join-btn" onClick={handleLeave}>
-              나가기
-              <CheckIcon />
-            </button>
-          )}
-        </div>
-      </div>
-
-      <main className="li-body">
-        <div className="li-festival-list">
-          {(listData?.festivals || []).map((item) => (
-            <div
-              key={item.id}
-              className="li-festival-card"
-              role="button"
-              tabIndex={0}
-              onClick={() => navigate(`/festival/${item.id}`)}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && navigate(`/festival/${item.id}`)}
+      <main className="li-main">
+        <section className="li-section">
+          <h2 className="li-section-title">이메일로 초대</h2>
+          <div className="li-invite-form">
+            <input 
+              type="email" 
+              className="li-email-input" 
+              placeholder="이메일 주소 입력"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleInvite()}
+            />
+            <button 
+              type="button" 
+              className="li-invite-btn" 
+              onClick={handleInvite}
+              disabled={inviting}
             >
-              <div className="li-festival-card-image">
-                {item.image ? <img src={item.image} alt={item.title} /> : <div className="li-festival-card-placeholder" />}
-              </div>
-              <div className="li-festival-card-body">
-                <h3 className="li-festival-card-title">{item.title}</h3>
-                <div className="li-festival-card-info">
-                  <p className="li-festival-card-row"><LocationIcon /><span>{item.location}</span></p>
-                  <p className="li-festival-card-row"><CalendarIcon /><span>{item.date}</span></p>
+              {inviting ? '초대 중...' : '초대'}
+            </button>
+          </div>
+        </section>
+
+        {collaborators.length > 0 && (
+          <section className="li-section">
+            <h2 className="li-section-title">협력자 목록</h2>
+            <div className="li-collaborator-list">
+              {collaborators.map((collaborator) => (
+                <div key={collaborator.user_id?._id || collaborator.user_id} className="li-collaborator-item">
+                  <div className="li-collaborator-info">
+                    <p className="li-collaborator-name">
+                      {collaborator.user_id?.nickname || '사용자'}
+                      {collaborator.user_id?.email && ` (${collaborator.user_id.email})`}
+                    </p>
+                    <p className="li-collaborator-role">
+                      {collaborator.status === 'pending' ? '대기 중' : '수락됨'} · {collaborator.role === 'editor' ? '편집 가능' : '보기만'}
+                    </p>
+                  </div>
+                  {listData?.user_id === currentUserId && (
+                    <button 
+                      type="button" 
+                      className="li-remove-btn" 
+                      onClick={() => handleRemoveCollaborator(collaborator.user_id?._id || collaborator.user_id)}
+                    >
+                      제거
+                    </button>
+                  )}
                 </div>
-                <div className="li-festival-card-meta">
-                  <span className="li-festival-card-rating">
-                    <img src="/assets/star_icon.svg" alt="" aria-hidden />
-                    {item.rating}<span className="li-festival-card-reviews">({item.reviewCount})</span>
-                  </span>
-                  <span className="li-festival-card-bookmark">
-                    <img src="/assets/list_icon.svg" alt="" aria-hidden />
-                    {item.bookmarkCount}
-                  </span>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </section>
+        )}
       </main>
 
-      {modalOpen && (
-        <div className="li-modal-overlay" onClick={() => setModalOpen(false)}>
-          <div className="li-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="li-modal-text">
-              <p className="li-modal-title">공유된 리스트에 참가할까요?</p>
-              <p className="li-modal-desc">친구와 함께 리스트에 축제를 추가할 수 있어요</p>
-            </div>
-            <div className="li-modal-actions">
-              <button type="button" className="li-modal-cancel" onClick={() => setModalOpen(false)}>취소</button>
-              <button type="button" className="li-modal-confirm" onClick={handleJoinConfirm}>참여하기</button>
-            </div>
-          </div>
+      {toastVisible && (
+        <div className="li-toast">
+          {toastMsg}
         </div>
       )}
-
-      {moreOpen && (
-        <div ref={dropdownRef} className="li-dropdown" style={{ top: morePos.top, right: morePos.right }}>
-          {joined ? (
-            <button type="button" className="li-dropdown-item li-dropdown-item--single" onClick={() => { setMoreOpen(false); handleLeave() }}>나가기</button>
-          ) : (
-            <button type="button" className="li-dropdown-item li-dropdown-item--single" onClick={() => { setMoreOpen(false); setModalOpen(true) }}>참여하기</button>
-          )}
-        </div>
-      )}
-
-      <div className={`li-toast ${toastVisible ? 'li-toast--visible' : ''}`}>
-        리스트에 참여했어요
-      </div>
     </div>
   )
 }

@@ -101,6 +101,8 @@ function ListDetail() {
   const [selectedFestivalId, setSelectedFestivalId] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
   const [toastMsg, setToastMsg] = useState('리스트에 축제가 추가되었어요')
+  const [canEdit, setCanEdit] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState(null)
   const moreRef = useRef(null)
   const sortRef = useRef(null)
   const moreBtnRef = useRef(null)
@@ -157,13 +159,39 @@ function ListDetail() {
     const fetchList = async () => {
       setListLoading(true)
       try {
+        // 사용자 정보 먼저 조회
+        const userRes = await fetch('http://localhost:5000/api/users/me', {
+          credentials: 'include',
+          signal: controller.signal,
+        })
+        let userId = null
+        if (userRes.ok) {
+          const userData = await userRes.json()
+          userId = userData.userId
+          if (isMounted) setCurrentUserId(userId)
+        }
+
+        // 리스트 조회
         const res = await fetch(`http://localhost:5000/api/lists/${id}`, {
           credentials: 'include',
           signal: controller.signal,
         })
         if (!res.ok) throw new Error()
         const data = await res.json()
-        if (isMounted) setListData(data)
+        
+        if (isMounted) {
+          setListData(data)
+          
+          // 권한 확인: 소유자이거나 accepted 협력자인 경우 수정 가능
+          const dataUserId = typeof data.user_id === 'string' ? data.user_id : data.user_id?.toString()
+          const isOwner = dataUserId === userId
+          const isCollaborator = data.collaborators?.some(c => {
+            const collabUserId = c.user_id?._id || c.user_id
+            const collabUserIdStr = typeof collabUserId === 'string' ? collabUserId : collabUserId?.toString()
+            return collabUserIdStr === userId && c.status === 'accepted'
+          })
+          setCanEdit(isOwner || isCollaborator)
+        }
       } catch (e) {
         if (e.name === 'AbortError') return
         if (isMounted) {
@@ -300,7 +328,7 @@ function ListDetail() {
   const sortedFestivals = (() => {
     if (!listData?.festivals) return []
     const arr = [...listData.festivals]
-    if (sortKey === 'oldest') return arr.reverse()
+    if (sortKey === 'newest') return arr.reverse()
     if (sortKey === 'rating') return arr.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
     return arr
   })()
@@ -339,9 +367,9 @@ function ListDetail() {
           <div className="ld-cover-info">
             <p className="ld-cover-name">{listData?.name}</p>
             <div className="ld-cover-meta">
-              {listData?.sharedWith && (
+              {listData?.collaborators && listData.collaborators.length > 0 && (
                 <>
-                  <span className="ld-cover-meta-text">{listData.sharedWith}님과 공유</span>
+                  <span className="ld-cover-meta-text">{listData.collaborators.length}명과 공유</span>
                   <span className="ld-cover-meta-dot" />
                 </>
               )}
@@ -351,21 +379,21 @@ function ListDetail() {
         </div>
 
         <div className="ld-actions">
-          <button type="button" className="ld-action-btn" onClick={() => navigate(`/list/${id}/add`)}>
-            축제 추가
-            <PlusSmallIcon />
-          </button>
-          <button type="button" className="ld-action-btn" onClick={async () => {
-            const url = `${window.location.origin}/list/${id}/invite`
-            if (navigator.share) {
-              try { await navigator.share({ title: listData?.name || '리스트 초대', url }) } catch { /* cancelled */ }
-            } else {
-              try { await navigator.clipboard.writeText(url); setToastMsg('초대 링크가 복사되었어요'); setToastVisible(true) } catch { /* ignore */ }
-            }
-          }}>
-            친구 초대
-            <InviteIcon />
-          </button>
+          {canEdit && (
+            <button type="button" className="ld-action-btn" onClick={() => navigate(`/list/${id}/add`)}>
+              축제 추가
+              <PlusSmallIcon />
+            </button>
+          )}
+          {(() => {
+            const dataUserId = typeof listData?.user_id === 'string' ? listData.user_id : listData?.user_id?.toString()
+            return dataUserId === currentUserId
+          })() && (
+            <button type="button" className="ld-action-btn" onClick={() => navigate(`/list/${id}/invite`)}>
+              친구 초대
+              <InviteIcon />
+            </button>
+          )}
         </div>
 
         <main className="ld-body">
@@ -436,18 +464,20 @@ function ListDetail() {
 
         {moreOpen && (
           <div ref={moreDropRef} className="ld-dropdown" style={{ top: morePos.top, right: morePos.right }}>
-            <button type="button" className="ld-dropdown-item ld-dropdown-item--first" onClick={() => { setMoreOpen(false); navigate(`/list/${id}/edit`) }}>리스트 편집</button>
-            <button type="button" className="ld-dropdown-item" onClick={() => { setMoreOpen(false); navigate(`/list/${id}/edit-festivals`) }}>축제 편집</button>
-            <button type="button" className="ld-dropdown-item" onClick={async () => {
-              setMoreOpen(false)
-              const url = `${window.location.origin}/list/${id}/invite`
-              if (navigator.share) {
-                try { await navigator.share({ title: listData?.name || '리스트 초대', url }) } catch { /* cancelled */ }
-              } else {
-                try { await navigator.clipboard.writeText(url); setToastMsg('초대 링크가 복사되었어요'); setToastVisible(true) } catch { /* ignore */ }
-              }
-            }}>친구 초대하기</button>
-            <button type="button" className="ld-dropdown-item ld-dropdown-item--last ld-dropdown-item--danger" onClick={() => { setMoreOpen(false); setDeleteModalOpen(true) }}>리스트 삭제</button>
+            {canEdit && (
+              <>
+                <button type="button" className="ld-dropdown-item ld-dropdown-item--first" onClick={() => { setMoreOpen(false); navigate(`/list/${id}/edit`) }}>리스트 편집</button>
+                <button type="button" className="ld-dropdown-item" onClick={() => { setMoreOpen(false); navigate(`/list/${id}/edit-festivals`) }}>축제 편집</button>
+              </>
+            )}
+            {listData?.user_id === currentUserId && (
+              <button type="button" className="ld-dropdown-item" onClick={() => { setMoreOpen(false); navigate(`/list/${id}/invite`) }}>친구 초대</button>
+            )}
+            {canEdit ? (
+              <button type="button" className={`ld-dropdown-item ${!listData?.user_id === currentUserId ? 'ld-dropdown-item--last' : ''} ld-dropdown-item--danger`} onClick={() => { setMoreOpen(false); setDeleteModalOpen(true) }}>리스트 삭제</button>
+            ) : (
+              <button type="button" className="ld-dropdown-item ld-dropdown-item--last ld-dropdown-item--danger" onClick={() => { setMoreOpen(false); setDeleteModalOpen(true) }}>공유 취소</button>
+            )}
           </div>
         )}
 
@@ -491,6 +521,21 @@ function ListDetail() {
           }}
           festivalId={selectedFestivalId}
           festivalImages={[]}
+          onAddToListSuccess={() => {
+            // 리스트 데이터 새로고침 (북마크 수 업데이트)
+            if (id && isDetail) {
+              fetch(`http://localhost:5000/api/lists/${id}`, {
+                credentials: 'include'
+              })
+                .then(res => res.ok ? res.json() : null)
+                .then(data => {
+                  if (data) {
+                    setListData(data)
+                  }
+                })
+                .catch(err => console.error('리스트 데이터 갱신 실패:', err))
+            }
+          }}
         />
       </div>
     )

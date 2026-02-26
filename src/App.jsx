@@ -7,6 +7,7 @@ import List from './pages/List'
 import Profile from './pages/Profile'
 import FestivalList from './pages/FestivalList'
 import Notification from './pages/Notification'
+import DebugNotification from './pages/DebugNotification'
 import Search from './pages/Search'
 import FestivalDetail from './pages/FestivalDetail'
 import ListDetail from './pages/ListDetail'
@@ -68,9 +69,18 @@ function App() {
 
     checkAuth()
 
+    // 로그아웃 이벤트 리스너
+    const handleLogout = () => {
+      if (isMounted) {
+        setAuthStatus('guest')
+      }
+    }
+    window.addEventListener('logout', handleLogout)
+
     return () => {
       isMounted = false
       controller.abort()
+      window.removeEventListener('logout', handleLogout)
     }
   }, [])
 
@@ -90,6 +100,7 @@ function App() {
       <Route path="/map" element={isLoggedIn ? <MapPage /> : <Navigate to="/login" replace />} />
       <Route path="/search" element={isLoggedIn ? <Search /> : <Navigate to="/login" replace />} />
       <Route path="/notifications" element={isLoggedIn ? <Notification /> : <Navigate to="/login" replace />} />
+      <Route path="/debug/notifications" element={isLoggedIn ? <DebugNotification /> : <Navigate to="/login" replace />} />
 
       <Route path="/list" element={isLoggedIn ? <List /> : <Navigate to="/login" replace />} />
       <Route path="/list/new" element={isLoggedIn ? <ListDetail /> : <Navigate to="/login" replace />} />

@@ -123,6 +123,19 @@
   height: 18px;
 }
 
+.festival-detail-bookmark {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: #F5F5F5;
+}
+
+.festival-detail-bookmark img {
+  width: 18px;
+  height: 18px;
+}
+
 .festival-detail-homepage-btn {
   display: inline-flex;
   align-items: center;

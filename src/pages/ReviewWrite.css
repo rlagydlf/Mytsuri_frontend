@@ -312,3 +312,17 @@
 .review-write-submit:disabled {
   cursor: default;
 }
+/* 에러 메시지 */
+.review-write-error {
+  margin: 0 20px 16px;
+  padding: 12px 16px;
+  background: rgba(252, 74, 58, 0.1);
+  border: 1px solid #FC4A3A;
+  border-radius: 8px;
+  color: #FC4A3A;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 140%;
+  letter-spacing: -0.14px;
+  text-align: left;
+}

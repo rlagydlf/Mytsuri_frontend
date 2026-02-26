@@ -11,7 +11,7 @@ function PlusIcon() {
   )
 }
 
-function AddToListSheet({ isOpen, onClose, festivalId, festivalImages = [], addedToList = false }) {
+function AddToListSheet({ isOpen, onClose, festivalId, festivalImages = [], addedToList = false, onAddToListSuccess = null }) {
   const navigate = useNavigate()
   const [lists, setLists] = useState([])
   const [loading, setLoading] = useState(true)
@@ -85,6 +85,10 @@ function AddToListSheet({ isOpen, onClose, festivalId, festivalImages = [], adde
       }
 
       setSuccessMessage(true)
+      // 리스트에 축제 추가 성공 후 콜백 실행 (북마크 수 업데이트를 위함)
+      if (onAddToListSuccess) {
+        onAddToListSuccess()
+      }
       setTimeout(() => {
         onClose()
       }, 1500)

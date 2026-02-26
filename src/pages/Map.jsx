@@ -67,6 +67,7 @@ function MapPage() {
   const [typeSheetOpen, setTypeSheetOpen] = useState(false)
   const [listSheetOpen, setListSheetOpen] = useState(false)
   const [festivalBottomSheet, setFestivalBottomSheet] = useState(null)
+  const [unreadCount, setUnreadCount] = useState(0)
 
   // API에서 필터와 마커 데이터 가져오기
   useEffect(() => {
@@ -99,6 +100,32 @@ function MapPage() {
     return () => {
       isMounted = false
       controller.abort()
+    }
+  }, [])
+
+  // 읽지 않은 알림 개수 가져오기
+  useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+    
+    const fetchUnreadCount = () => {
+      fetch('http://localhost:5000/api/notifications/unread-count', { 
+        signal: controller.signal, 
+        credentials: 'include' 
+      })
+        .then((res) => res.ok ? res.json() : { count: 0 })
+        .then((data) => { if (isMounted) setUnreadCount(data.count || 0) })
+        .catch(() => {})
+    }
+
+    fetchUnreadCount()
+    // 30초마다 체크
+    const interval = setInterval(fetchUnreadCount, 30000)
+    
+    return () => { 
+      isMounted = false
+      controller.abort()
+      clearInterval(interval)
     }
   }, [])
 
@@ -220,7 +247,10 @@ function MapPage() {
           <h1 className="map-title">지도</h1>
           <div className="map-header-actions">
             <button type="button" className="icon-btn map-icon-btn" aria-label="검색" onClick={() => navigate('/search')}><SearchIcon /></button>
-            <button type="button" className="icon-btn map-icon-btn" aria-label="알림" onClick={() => navigate('/notifications')}><NotificationIcon /></button>
+            <button type="button" className="icon-btn map-icon-btn notification-btn" aria-label="알림" onClick={() => navigate('/notifications')}>
+              <NotificationIcon />
+              {unreadCount > 0 && <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+            </button>
           </div>
         </header>
         <div className="map-filters">
@@ -480,6 +510,26 @@ function MapPage() {
           onClose={() => setListSheetOpen(false)}
           festivalId={festivalBottomSheet.id}
           festivalImages={[...(festivalBottomSheet.mainImage ? [festivalBottomSheet.mainImage] : []), ...festivalBottomSheet.reviewPhotos]}
+          onAddToListSuccess={() => {
+            // 선택된 축제 데이터 새로고침 (북마크 수 업데이트)
+            if (festivalBottomSheet?.id) {
+              fetch(`http://localhost:5000/api/festivals/${festivalBottomSheet.id}`, {
+                credentials: 'include'
+              })
+                .then(res => res.ok ? res.json() : null)
+                .then(updatedFestival => {
+                  if (updatedFestival) {
+                    setFestivalBottomSheet({
+                      ...festivalBottomSheet,
+                      ...updatedFestival,
+                      mainImage: updatedFestival.image || festivalBottomSheet.mainImage,
+                      reviewPhotos: updatedFestival.photos || festivalBottomSheet.reviewPhotos || []
+                    })
+                  }
+                })
+                .catch(err => console.error('축제 데이터 갱신 실패:', err))
+            }
+          }}
         />
       )}
 
