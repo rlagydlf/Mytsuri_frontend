@@ -227,9 +227,9 @@ function Home() {
                 onClick={() => navigate(`/festival/${slide.festivalId ?? slide.id}`, { state: { from: 'home' } })}
                 onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && navigate(`/festival/${slide.festivalId ?? slide.id}`, { state: { from: 'home' } })}
               >
-                <img src={slide.image} alt={slide.title} />
+                <img src={slide.image} alt={slide.title || slide.name} />
                 <div className="banner-overlay">
-                  <h2 className="banner-title">{slide.title}</h2>
+                  <h2 className="banner-title">{slide.title || slide.name}</h2>
                   <p className="banner-subtitle">{slide.subtitle || slide.reason || slide.location}</p>
                 </div>
               </div>
